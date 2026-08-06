@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk Sistem | PLH-Intelligence - SMART Ekselensia Indonesia</title>
+  
+  <!-- Meta Tag SEO & Deskripsi -->
+  <meta name="description" content="Halaman autentikasi masuk sistem PLH-Intelligence SMART Ekselensia Indonesia.">
+  
+  <!-- Favicon System -->
+  <link rel="icon" type="image/x-icon" href="./public/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="./public/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./public/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="./public/favicon-48x48.png">
+
+  <!-- Font External: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Menggunakan Jalur Relatif ke Style Global -->
+  <link rel="stylesheet" href="./src/style/style.css">
+  
+  <!-- Menggunakan Jalur Relatif ke Style Spesifik Login -->
+  <link rel="stylesheet" href="./src/pages/login/login.css">
+</head>
+<body class="login-body">
+
+  <!-- ==========================================================================
+     HEADER / NAVIGASI KEMBALI (TAMPILAN MOBILE DIPERBAIKI TOTAL)
+     ========================================================================== -->
+  <header class="login-header">
+    <div class="login-header-container">
+      <a href="./landing.html" class="brand-logo" aria-label="Kembali ke Landing Page">
+        <img src="./src/assets/logo.png" alt="Logo PLH-Intelligence" class="brand-img" onerror="this.style.display='none'">
+        <span class="brand-text"><span>PLH</span>-Intelligence</span>
+      </a>
+      <a href="./landing.html" class="btn btn-outline btn-sm back-link">
+        <span class="back-text-full">← Kembali ke Beranda</span>
+        <span class="back-text-short">← Beranda</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+     MAIN LOGIN CONTAINER
+     ========================================================================== -->
+  <main class="login-main">
+    <div class="login-wrapper">
+      <div class="login-card-container">
+        
+        <!-- Header Kartu Login -->
+        <div class="login-card-header text-center">
+          <div class="badge badge-accent login-badge">
+            🌿 PORTAL ADIWIYATA
+          </div>
+          <h1 class="login-title">Selamat Datang</h1>
+          <p class="login-subtitle">
+            Masuk ke sistem <strong>PLH–Intelligence</strong> untuk mengelola dan memantau piket lingkungan sekolah.
+          </p>
+        </div>
+
+        <!-- Wadah Pesan Umpan Balik (Alert Dinamis via JS) -->
+        <div id="loginAlert" class="alert-container" aria-live="polite"></div>
+
+        <!-- Form Autentikasi (Fitur Role Switcher Telah Dihapus) -->
+        <form id="loginForm" class="login-form" novalidate>
+
+          <!-- Input Identitas Universal -->
+          <div class="form-group">
+            <label for="usernameInput" class="form-label">
+              NIS / NIP / Username
+            </label>
+            <div class="input-icon-wrapper">
+              <input 
+                type="text" 
+                id="usernameInput" 
+                name="username" 
+                class="form-control" 
+                placeholder="Masukkan NIS, NIP, atau Username..." 
+                required 
+                autocomplete="username"
+              >
+            </div>
+            <span class="field-error-msg" id="usernameError"></span>
+          </div>
+
+          <!-- Input Kata Sandi -->
+          <div class="form-group">
+            <div class="label-with-action">
+              <label for="passwordInput" class="form-label">Kata Sandi</label>
+            </div>
+            <div class="input-password-wrapper">
+              <input 
+                type="password" 
+                id="passwordInput" 
+                name="password" 
+                class="form-control" 
+                placeholder="Masukkan kata sandi..." 
+                required 
+                autocomplete="current-password"
+              >
+              <button type="button" id="togglePasswordBtn" class="password-toggle-btn" aria-label="Tampilkan Kata Sandi">
+                👁️
+              </button>
+            </div>
+            <span class="field-error-msg" id="passwordError"></span>
+          </div>
+
+          <!-- Opsi Tambahan (Ingat Saya) -->
+          <div class="form-options flex-between">
+            <label class="checkbox-label">
+              <input type="checkbox" id="rememberMe" name="rememberMe">
+              <span>Ingat Sesi Saya</span>
+            </label>
+          </div>
+
+          <!-- Tombol Eksekusi Submit -->
+          <button type="submit" id="submitBtn" class="btn btn-primary btn-lg login-submit-btn">
+            <span class="btn-text">Masuk ke Dashboard</span>
+            <span class="btn-spinner" aria-hidden="true" style="display: none;">⏳</span>
+          </button>
+        </form>
+
+        <!-- Footer Kartu Login -->
+        <div class="login-card-footer text-center">
+          <p class="institution-tag">
+            SMART Ekselensia Indonesia<br>
+            <span class="text-xs text-muted">Sekolah Adiwiyata Tingkat Provinsi</span>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Menggunakan Jalur Relatif ke Berkas JavaScript -->
+  <script type="module" src="./src/pages/login/login.js"></script>
+</body>
+</html>

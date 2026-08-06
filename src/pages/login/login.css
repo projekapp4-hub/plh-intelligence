@@ -1,0 +1,310 @@
+/* ==========================================================================
+   LOGIN.CSS - Responsive Fix & Clean Layout
+   Tema: PLH-Intelligence - SMART Ekselensia Indonesia
+   Pendekatan: Mobile-First Responsive Web Design
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. STRUKTUR UTAMA DAN LATAR BELAKANG
+   -------------------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+}
+
+.login-body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, var(--color-bg-base, #f4fbf6) 0%, var(--color-bg-light, #e8f5ed) 100%);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   2. HEADER & BRANDING (ISOLASI ANTI OVERLAP MOBILE)
+   -------------------------------------------------------------------------- */
+.login-header {
+  width: 100%;
+  background-color: transparent;
+  padding: 0.5rem 0;
+}
+
+.login-header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+}
+
+/* Identitas Brand */
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: clamp(0.95rem, 3.8vw, 1.2rem);
+  color: var(--color-primary, #1b4332);
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.login-header .brand-img {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.brand-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-text span {
+  color: var(--color-accent, #2d6a4f);
+}
+
+/* Tombol Navigasi Kembali */
+.back-link {
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: var(--text-xs, 0.8rem);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-primary, #1b4332);
+}
+
+.back-text-short {
+  display: none;
+}
+
+.back-text-full {
+  display: inline;
+}
+
+/* Penyesuaian Responsif Layar HP/Seluler (< 480px) */
+@media (max-width: 480px) {
+  .login-header-container {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .login-header .brand-img {
+    height: 24px;
+  }
+
+  .brand-logo {
+    gap: 0.25rem;
+  }
+
+  .back-text-full {
+    display: none;
+  }
+
+  .back-text-short {
+    display: inline;
+  }
+
+  .back-link {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. KARTU LOGIN (LOGIN CARD CONTAINER)
+   -------------------------------------------------------------------------- */
+.login-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem 2rem 1rem;
+  width: 100%;
+}
+
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+}
+
+.login-card-container {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-top: 5px solid var(--color-primary, #1b4332);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem 1rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+}
+
+@media (min-width: 480px) {
+  .login-card-container {
+    padding: 1.75rem 1.5rem;
+  }
+}
+
+.login-card-header {
+  margin-bottom: 1.25rem;
+}
+
+.login-badge {
+  margin-bottom: 0.5rem;
+  display: inline-block;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 0.7rem;
+}
+
+.login-title {
+  font-size: clamp(1.35rem, 5vw, 1.75rem);
+  color: var(--color-primary, #1b4332);
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.login-subtitle {
+  font-size: clamp(0.75rem, 3vw, 0.85rem);
+  color: var(--color-text-muted, #64748b);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   4. FORM ELEMENTS & INPUTS
+   -------------------------------------------------------------------------- */
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-main, #1e293b);
+  margin-bottom: 0.35rem;
+}
+
+.label-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.875rem;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border, #cbd5e1);
+  background-color: var(--color-surface, #ffffff);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-primary, #1b4332);
+  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.15);
+}
+
+.input-password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-password-wrapper .form-control {
+  padding-right: 2.75rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0.25rem 0.5rem;
+  transition: opacity 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+  opacity: 1;
+}
+
+.field-error-msg {
+  font-size: 0.75rem;
+  color: #d9534f;
+  margin-top: 0.25rem;
+  display: block;
+  min-height: 1rem;
+}
+
+.form-options {
+  margin-bottom: 1.25rem;
+  font-size: 0.8rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted, #64748b);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  accent-color: var(--color-primary, #1b4332);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.login-submit-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: var(--radius-md, 8px);
+}
+
+/* --------------------------------------------------------------------------
+   5. ALERT CONTAINER & FOOTER KARTU
+   -------------------------------------------------------------------------- */
+.alert-container {
+  margin-bottom: 0.75rem;
+}
+
+.login-card-footer {
+  margin-top: 1.25rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--color-bg-light, #f1f5f9);
+}
+
+.institution-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-primary, #1b4332);
+  line-height: 1.4;
+  margin: 0;
+}
