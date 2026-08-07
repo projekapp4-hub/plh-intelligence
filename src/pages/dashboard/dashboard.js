@@ -4,7 +4,14 @@
  * SMART Ekselensia Indonesia
  */
 
+// Import modul otentikasi terpusat dari src/utils/auth.js
+import { requireAuth, getCurrentUser, logoutUser } from '../../utils/auth.js';
+
 document.addEventListener('DOMContentLoaded', () => {
+  // 0. Proteksi Rute (Route Guarding)
+  // Menendang pengguna kembali ke login.html jika belum terautentikasi
+  requireAuth();
+
   // 1. Inisialisasi Elemen DOM Canvas & Navigasi
   const spaCanvas = document.getElementById('spaCanvas');
   const navButtons = document.querySelectorAll('.spa-nav-btn');
@@ -20,10 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const userNameElem = document.getElementById('userName');
   const userAvatarElem = document.getElementById('userAvatar');
 
-  // Ambil data sesi dari LocalStorage
-  const currentUserSession = JSON.parse(localStorage.getItem('plh_user_session')) || {
-    username: 'Santri / Pengawas',
-    isLoggedIn: true
+  // Ambil data sesi menggunakan utilitas terpusat dari auth.js
+  const currentUserSession = getCurrentUser() || {
+    name: 'Santri / Pengawas',
+    username: 'guest'
   };
 
   // 2. Format Tanggal Saat Ini di Topbar
@@ -33,10 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Tampilkan Identitas Pengguna di Sidebar
-  if (userNameElem && currentUserSession.username) {
-    userNameElem.textContent = currentUserSession.username;
+  const displayName = currentUserSession.name || currentUserSession.username;
+  if (userNameElem && displayName) {
+    userNameElem.textContent = displayName;
     if (userAvatarElem) {
-      userAvatarElem.textContent = currentUserSession.username.charAt(0).toUpperCase();
+      userAvatarElem.textContent = displayName.charAt(0).toUpperCase();
     }
   }
 
@@ -136,8 +144,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       if (confirm('Apakah Anda yakin ingin keluar dari sistem?')) {
-        localStorage.removeItem('plh_user_session');
-        window.location.href = './login.html';
+        // Memanggil fungsi logout terpusat dari auth.js
+        // Ini akan membersihkan localStorage dan sessionStorage sekaligus
+        logoutUser();
       }
     });
   }

@@ -28,7 +28,7 @@
 <body class="login-body">
 
   <!-- ==========================================================================
-     HEADER / NAVIGASI KEMBALI (TAMPILAN MOBILE DIPERBAIKI TOTAL)
+     HEADER / NAVIGASI KEMBALI
      ========================================================================== -->
   <header class="login-header">
     <div class="login-header-container">
@@ -61,10 +61,10 @@
           </p>
         </div>
 
-        <!-- Wadah Pesan Umpan Balik (Alert Dinamis via JS) -->
-        <div id="loginAlert" class="alert-container" aria-live="polite"></div>
+        <!-- Wadah Pesan Umpan Balik (Diselaraskan ID menjadi alertContainer) -->
+        <div id="alertContainer" class="alert-container" aria-live="polite"></div>
 
-        <!-- Form Autentikasi (Fitur Role Switcher Telah Dihapus) -->
+        <!-- Form Autentikasi -->
         <form id="loginForm" class="login-form" novalidate>
 
           <!-- Input Identitas Universal -->
@@ -108,18 +108,10 @@
             <span class="field-error-msg" id="passwordError"></span>
           </div>
 
-          <!-- Opsi Tambahan (Ingat Saya) -->
-          <div class="form-options flex-between">
-            <label class="checkbox-label">
-              <input type="checkbox" id="rememberMe" name="rememberMe">
-              <span>Ingat Sesi Saya</span>
-            </label>
-          </div>
-
-          <!-- Tombol Eksekusi Submit -->
+          <!-- Tombol Eksekusi Submit (Ditambahkan atribut ID pada elemen internal) -->
           <button type="submit" id="submitBtn" class="btn btn-primary btn-lg login-submit-btn">
-            <span class="btn-text">Masuk ke Dashboard</span>
-            <span class="btn-spinner" aria-hidden="true" style="display: none;">⏳</span>
+            <span id="btnText" class="btn-text">Masuk ke Dashboard</span>
+            <span id="btnSpinner" class="btn-spinner" aria-hidden="true" style="display: none;">⏳</span>
           </button>
         </form>
 
@@ -127,7 +119,8 @@
         <div class="login-card-footer text-center">
           <p class="institution-tag">
             SMART Ekselensia Indonesia<br>
-            <span class="text-xs text-muted">Sekolah Adiwiyata Tingkat Provinsi</span>
+            <span class="text-xs text-muted">Sekolah Adiwiyata Tingkat Provinsi</span><br>
+            <span class="text-xs text-muted">User = admin <br>password = admin</span>
           </p>
         </div>
 
