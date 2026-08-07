@@ -1,0 +1,297 @@
+/* ==========================================================================
+   DASHBOARD.CSS - SPA Canvas Layout & Responsive Navigation
+   Tema: PLH-Intelligence - SMART Ekselensia Indonesia
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+body.dashboard-body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg-base, #f4fbf6);
+  color: var(--color-text-main, #1e293b);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   1. TATA LETAK UTAMA (LAYOUT STRUCTURE)
+   -------------------------------------------------------------------------- */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Overlay Mobile */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 90;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s ease;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* --------------------------------------------------------------------------
+   2. SIDEBAR NAVIGATION
+   -------------------------------------------------------------------------- */
+.dashboard-sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 270px;
+  height: 100vh;
+  background-color: #ffffff;
+  border-right: 1px solid var(--color-border, #e2e8f0);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0,0,0,0.1));
+}
+
+.dashboard-sidebar.active {
+  left: 0;
+}
+
+.sidebar-header {
+  padding: 1.25rem 1rem 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-header .brand-img {
+  height: 28px;
+  width: auto;
+}
+
+.sidebar-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--color-text-muted, #64748b);
+  padding: 0.25rem;
+}
+
+.sidebar-badge-container {
+  padding: 0 1.25rem 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Item Navbar */
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0.75rem;
+  overflow-y: auto;
+}
+
+.nav-menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.spa-nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.spa-nav-btn:hover {
+  background-color: #f1f5f9;
+  color: var(--color-primary, #1b4332);
+}
+
+.spa-nav-btn.active {
+  background-color: #e8f5ed;
+  color: var(--color-primary, #1b4332);
+  font-weight: 700;
+  border-left: 4px solid var(--color-primary, #1b4332);
+}
+
+.nav-icon {
+  font-size: 1.1rem;
+}
+
+/* Sidebar Footer User Info */
+.sidebar-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #f1f5f9;
+  background-color: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.user-session-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: var(--color-primary, #1b4332);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.user-role-badge {
+  color: var(--color-accent, #2d6a4f);
+  font-size: 0.7rem;
+}
+
+.logout-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   3. TOPBAR HEADER & DASHBOARD MAIN
+   -------------------------------------------------------------------------- */
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+
+.topbar {
+  height: 64px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 80;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.topbar-toggle-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--color-text-main, #1e293b);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.topbar-toggle-btn:hover {
+  background-color: #f1f5f9;
+}
+
+.topbar-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-primary, #1b4332);
+}
+
+.date-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: #f1f5f9;
+  color: #475569;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   4. SPA CANVAS & LOADING STATES
+   -------------------------------------------------------------------------- */
+.spa-canvas {
+  flex: 1;
+  padding: 1.25rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.canvas-loading, .canvas-error {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  background-color: #ffffff;
+  border: 1px dashed var(--color-border, #cbd5e1);
+  border-radius: 12px;
+  color: var(--color-text-muted, #64748b);
+  font-weight: 600;
+}
+
+.canvas-error {
+  border-color: #fca5a5;
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-sidebar {
+    left: 0;
+  }
+  .sidebar-close-btn {
+    display: none;
+  }
+  .topbar-toggle-btn {
+    display: none;
+  }
+  .dashboard-main {
+    margin-left: 270px;
+  }
+}

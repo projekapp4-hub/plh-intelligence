@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Canvas | PLH-Intelligence - SMART Ekselensia Indonesia</title>
+  
+  <meta name="description" content="Dashboard Single Page Application (SPA) Sistem Pendukung Keputusan Piket Lingkungan SMART Ekselensia Indonesia.">
+  
+  <!-- Favicon System -->
+  <link rel="icon" type="image/x-icon" href="./public/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="./public/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./public/favicon-32x32.png">
+
+  <!-- Font External: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Impor CSS Global via Path Relatif -->
+  <link rel="stylesheet" href="./src/style/style.css">
+  
+  <!-- Impor CSS Dashboard Canvas via Path Relatif -->
+  <link rel="stylesheet" href="./src/pages/dashboard/dashboard.css">
+</head>
+<body class="dashboard-body">
+
+  <!-- Overlay untuk Sidebar pada Tampilan Mobile -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <div class="dashboard-layout">
+    
+    <!-- ==========================================================================
+       SIDEBAR NAVIGATION (NAVBAR SPA CONTROLLER)
+       ========================================================================== -->
+    <aside id="sidebar" class="dashboard-sidebar">
+      <!-- Sidebar Header & Logo -->
+      <div class="sidebar-header">
+        <a href="./landing.html" class="brand-logo" aria-label="Halaman Utama PLH-Intelligence">
+          <img src="./src/assets/logo.png" alt="Logo PLH-Intelligence" class="brand-img" onerror="this.style.display='none'">
+          <span class="brand-text"><span>PLH</span>-Intelligence</span>
+        </a>
+        <button id="sidebarCloseBtn" class="sidebar-close-btn" aria-label="Tutup Sidebar">✕</button>
+      </div>
+
+      <div class="sidebar-badge-container">
+        <span class="badge badge-accent text-xs">🌱 Portal Adiwiyata</span>
+      </div>
+
+      <!-- Navigasi SPA Items (5 Menu Utama) -->
+      <nav class="sidebar-nav">
+        <ul class="nav-menu-list">
+          <!-- 1. Dashboard -> quickView.js -->
+          <li class="nav-item">
+            <button class="spa-nav-btn active" data-view="quickView" data-title="Dashboard">
+              <span class="nav-icon">📊</span>
+              <span class="nav-label">Dashboard</span>
+            </button>
+          </li>
+
+          <!-- 2. Input Data -> formView.js -->
+          <li class="nav-item">
+            <button class="spa-nav-btn" data-view="formView" data-title="Input Data">
+              <span class="nav-icon">📝</span>
+              <span class="nav-label">Input Data</span>
+            </button>
+          </li>
+
+          <!-- 3. Cek Data -> data.js -->
+          <li class="nav-item">
+            <button class="spa-nav-btn" data-view="data" data-title="Cek Data">
+              <span class="nav-icon">🗂️</span>
+              <span class="nav-label">Cek Data</span>
+            </button>
+          </li>
+
+          <!-- 4. Analisis -> periodic.js -->
+          <li class="nav-item">
+            <button class="spa-nav-btn" data-view="periodic" data-title="Analisis Periodic">
+              <span class="nav-icon">📈</span>
+              <span class="nav-label">Analisis</span>
+            </button>
+          </li>
+
+          <!-- 5. Saran Keputusan -> dssView.js -->
+          <li class="nav-item">
+            <button class="spa-nav-btn" data-view="dssView" data-title="Saran Keputusan (DSS)">
+              <span class="nav-icon">🎯</span>
+              <span class="nav-label">Saran Keputusan</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar Footer User Session Info -->
+      <div class="sidebar-footer">
+        <div class="user-session-card">
+          <div class="user-avatar" id="userAvatar">U</div>
+          <div class="user-info">
+            <span class="user-name" id="userName">Pengguna PLH</span>
+            <span class="user-role-badge text-xs" id="userRoleBadge">Aktif</span>
+          </div>
+        </div>
+        <button id="logoutBtn" class="btn btn-outline btn-sm logout-btn" title="Keluar Sistem">
+          <span>🚪 Keluar</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ==========================================================================
+       MAIN CONTENT CONTAINER (SPA CANVAS)
+       ========================================================================== -->
+    <div class="dashboard-main">
+      
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="sidebarToggleBtn" class="topbar-toggle-btn" aria-label="Buka Menu Navigasi">
+            ☰
+          </button>
+          <h2 id="topbarTitle" class="topbar-title">Dashboard</h2>
+        </div>
+        
+        <div class="topbar-right">
+          <div class="date-badge" id="currentDateBadge">--:--</div>
+        </div>
+      </header>
+
+      <!-- WADAH CANVAS UTAMA UNTUK MENAMPILKAN MODUL DARI FOLDER VIEWS -->
+      <main id="spaCanvas" class="spa-canvas" aria-live="polite">
+        <!-- Modul dari folder views/ akan dirender secara dinamis oleh dashboard.js di sini -->
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Impor JavaScript Router Canvas via Path Relatif -->
+  <script type="module" src="./src/pages/dashboard/dashboard.js"></script>
+</body>
+</html>
