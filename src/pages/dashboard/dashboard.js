@@ -1,18 +1,50 @@
 /**
- * DASHBOARD.JS - SPA Canvas Orchestrator & View Loader
+ * ============================================================================
+ * DASHBOARD.JS - SPA Canvas Orchestrator & View Loader (IndexedDB Ready)
  * Aplikasi PLH-Intelligence
  * SMART Ekselensia Indonesia
+ * ============================================================================
  */
 
-// Import modul otentikasi terpusat dari src/utils/auth.js
+// 1. Import Modul Otentikasi Terpusat
 import { requireAuth, getCurrentUser, logoutUser } from '../../utils/auth.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+// 2. Import Modul Storage IndexedDB & Mock Data (Sesuai export di storage.js)
+import { seedMockData, getAllItems } from '../../utils/storage.js';
+import { getMockReports } from '../../utils/mockData.js';
+
+/**
+ * Memeriksa dan menyuntikkan mock data ke dalam IndexedDB (store: dss_records)
+ * apabila peranti / PC baru belum memiliki rekaman data laporan.
+ */
+async function initStorageWithMockData() {
+  try {
+    // Ambil data laporan dari store 'dss_records' di IndexedDB
+    const currentReports = await getAllItems('dss_records');
+
+    // Jika Storage IndexedDB masih kosong
+    if (!currentReports || currentReports.length === 0) {
+      const mockData = getMockReports();
+      
+      // Gunakan fungsi seedMockData asynchronous dari storage.js
+      await seedMockData(mockData);
+      console.log(`[PLH-Storage] Berhasil menyuntikkan ${mockData.length} mock data laporan awal ke IndexedDB.`);
+    } else {
+      console.log(`[PLH-Storage] Data laporan terdeteksi di IndexedDB (${currentReports.length} laporan siap digunakan).`);
+    }
+  } catch (error) {
+    console.error('[PLH-Storage] Gagal menginisialisasi mock data pada IndexedDB:', error);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
   // 0. Proteksi Rute (Route Guarding)
-  // Menendang pengguna kembali ke login.html jika belum terautentikasi
   requireAuth();
 
-  // 1. Inisialisasi Elemen DOM Canvas & Navigasi
+  // 1. Inisialisasi Storage Async (IndexedDB)
+  await initStorageWithMockData();
+
+  // 2. Inisialisasi Elemen DOM Canvas & Navigasi
   const spaCanvas = document.getElementById('spaCanvas');
   const navButtons = document.querySelectorAll('.spa-nav-btn');
   const topbarTitle = document.getElementById('topbarTitle');
@@ -27,13 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const userNameElem = document.getElementById('userName');
   const userAvatarElem = document.getElementById('userAvatar');
 
-  // Ambil data sesi menggunakan utilitas terpusat dari auth.js
+  // Ambil data sesi pengguna
   const currentUserSession = getCurrentUser() || {
     name: 'Santri / Pengawas',
     username: 'guest'
   };
 
-  // 2. Format Tanggal Saat Ini di Topbar
+  // 3. Format Tanggal Saat Ini di Topbar
   if (currentDateBadge) {
     const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
     currentDateBadge.textContent = new Date().toLocaleDateString('id-ID', options);
@@ -49,14 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * 3. Fungsi Utama Pemuat Modul Tampilan (Dynamic View Router)
-   * Mengimpor berkas JavaScript secara dinamis dari folder ./views/
-   * @param {string} viewName - Nama file JS tanpa ekstensi (misal: 'quickView', 'formView', 'data', 'periodic', 'dssView')
+   * 4. Fungsi Utama Pemuat Modul Tampilan (Dynamic View Router)
    */
   async function loadViewModule(viewName) {
     if (!spaCanvas) return;
 
-    // Tampilkan indikator pemuatan pada canvas
+    // Indikator pemuatan
     spaCanvas.innerHTML = `
       <div class="canvas-loading">
         <span>⏳ Memuat modul <strong>views/${viewName}.js</strong>...</span>
@@ -64,26 +94,37 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     try {
-      // Import modul secara dinamis dari folder ./views/
+      // Import modul secara dinamis
       const viewModule = await import(`./views/${viewName}.js`);
 
-      // Bersihkan canvas dari status loading
+      // Bersihkan canvas
       spaCanvas.innerHTML = '';
 
-      // Eksekusi fungsi render yang diekspor oleh berkas modul view
-      if (viewModule && typeof viewModule.render === 'function') {
-        viewModule.render(spaCanvas);
-      } else if (viewModule && typeof viewModule.default === 'function') {
-        viewModule.default(spaCanvas);
-      } else {
+      // Eksekusi fungsi render dengan try-catch internal
+      try {
+        if (viewModule && typeof viewModule.render === 'function') {
+          await viewModule.render(spaCanvas);
+        } else if (viewModule && typeof viewModule.default === 'function') {
+          await viewModule.default(spaCanvas);
+        } else {
+          spaCanvas.innerHTML = `
+            <div class="canvas-error">
+              ⚠️ Berkas <strong>views/${viewName}.js</strong> tidak mengekspor fungsi <code>render(container)</code> yang valid.
+            </div>
+          `;
+        }
+      } catch (renderError) {
+        console.error(`Error saat mengeksekusi render pada views/${viewName}.js:`, renderError);
         spaCanvas.innerHTML = `
           <div class="canvas-error">
-            ⚠️ Berkas <strong>views/${viewName}.js</strong> tidak mengekspor fungsi <code>render(container)</code> atau <code>default(container)</code> yang valid.
+            ❌ Terjadi kesalahan saat merender tampilan <strong>${viewName}</strong>: <br>
+            <code>${renderError.message}</code>
           </div>
         `;
       }
-    } catch (error) {
-      console.error(`Gagal mengimpor modul views/${viewName}.js:`, error);
+
+    } catch (importError) {
+      console.error(`Gagal mengimpor modul views/${viewName}.js:`, importError);
       spaCanvas.innerHTML = `
         <div class="canvas-error">
           ❌ Gagal memuat tampilan. Pastikan berkas <strong>src/pages/dashboard/views/${viewName}.js</strong> sudah tersedia.
@@ -93,39 +134,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * 4. Handler Pengalih Navigasi Aktif
-   * @param {string} targetView - Nama view tujuan
-   * @param {string} pageTitle - Judul yang ditampilkan pada topbar
+   * 5. Handler Pengalih Navigasi
    */
   function navigateTo(targetView, pageTitle) {
-    // Perbarui status kelas aktif tombol navbar
     navButtons.forEach(btn => {
       const isTarget = btn.getAttribute('data-view') === targetView;
       btn.classList.toggle('active', isTarget);
     });
 
-    // Perbarui judul topbar
     if (topbarTitle && pageTitle) {
       topbarTitle.textContent = pageTitle;
     }
 
-    // Tutup sidebar jika dalam mode mobile
     closeMobileSidebar();
-
-    // Muat modul berkas JavaScript dari folder views
     loadViewModule(targetView);
   }
 
-  // 5. Penanganan Event Klik pada Menu Navbar
+  // 6. Penanganan Event Klik Navigasi
   navButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const targetView = btn.getAttribute('data-view');
-      const pageTitle = btn.getAttribute('data-title') || btn.querySelector('.nav-label').textContent;
+      const pageTitle = btn.getAttribute('data-title') || btn.querySelector('.nav-label')?.textContent;
       navigateTo(targetView, pageTitle);
     });
   });
 
-  // 6. Kontrol Off-Canvas Sidebar Mobile
+  // 7. Kontrol Off-Canvas Sidebar Mobile
   function openMobileSidebar() {
     if (sidebar) sidebar.classList.add('active');
     if (sidebarOverlay) sidebarOverlay.classList.add('active');
@@ -140,19 +174,17 @@ document.addEventListener('DOMContentLoaded', () => {
   if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeMobileSidebar);
   if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileSidebar);
 
-  // 7. Kontrol Keluar Sistem (Logout)
+  // 8. Kontrol Logout
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       if (confirm('Apakah Anda yakin ingin keluar dari sistem?')) {
-        // Memanggil fungsi logout terpusat dari auth.js
-        // Ini akan membersihkan localStorage dan sessionStorage sekaligus
         logoutUser();
       }
     });
   }
 
-  // Inisialisasi Tampilan Awal: Memuat quickView.js secara default
+  // Inisialisasi Tampilan Awal
   navigateTo('quickView', 'Dashboard');
 
-  console.log('PLH-Intelligence Modular Router Initialized (Views Directory Integration)');
+  console.log('PLH-Intelligence Router Initialized with IndexedDB Support');
 });

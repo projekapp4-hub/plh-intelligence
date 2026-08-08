@@ -1,54 +1,24 @@
 /**
  * ============================================================================
- * PLH-INTELLIGENCE - PDF Generator Utility
- * ============================================================================
+ * PLH-INTELLIGENCE - PDF Generator Utility (FIXED OVERLAP & UNICODE)
  * Berkas    : src/utils/createPDF.js
- * Deskripsi : Helper modular untuk mencetak dokumen PDF terstruktur (A4)
- *             berbasis pustaka `jspdf` murni tanpa plugin eksternal.
  * ============================================================================
  */
 
 import { jsPDF } from 'jspdf';
 
 /**
- * Parameter konfigurasi pembuatan dokumen PDF.
- * @typedef {Object} PDFGeneratorOptions
- * @property {string} [title="PLH-INTELLIGENCE REPORT"] - Judul utama pada header laporan.
- * @property {string} [subtitle="Laporan Data Lingkungan Sekolah"] - Sub-judul atau kategori laporan.
- * @property {Array<string|{header: string, dataKey: string, width?: number}>} headers - Definisi kolom tabel.
- * @property {Array<Object|Array>} data - Array data yang akan dimasukkan ke dalam tabel.
- * @property {string} [fileName="Laporan_PLH.pdf"] - Nama berkas keluaran saat diunduh.
- * @property {'portrait'|'landscape'} [orientation="portrait"] - Orientasi kertas (portrait/landscape).
+ * Helper Sanitasi Karakter: Membersihkan karakter Unicode/Emoji (seperti ✓ dan ✕)
+ * yang tidak didukung font standar Helvetica jsPDF agar tidak merusak layout Y.
  */
+function sanitizePdfText(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/[✓✔]/g, '[V]')
+    .replace(/[✕✖❌]/g, '[X]')
+    .replace(/[^\x00-\x7F]/g, ''); // Hapus karakter Non-ASCII yang tidak terdaftar
+}
 
-/**
- * Menghasilkan dan memicu unduhan berkas PDF berstandar laporan resmi PLH-Intelligence.
- *
- * @async
- * @function generatePDFReport
- * @param {PDFGeneratorOptions} options - Objek konfigurasi parameter laporan PDF.
- * @returns {Promise<boolean>} Resolves `true` jika eksekusi dan unduhan berhasil.
- * @throws {Error} Jika data tidak valid atau terjadi kegagalan pemrosesan PDF.
- *
- * @example
- * import { generatePDFReport } from './utils/createPDF.js';
- *
- * await generatePDFReport({
- *   title: 'LAPORAN EVALUASI ZONA PIKET',
- *   subtitle: 'SMART Ekselensia Indonesia - Periode Agustus 2026',
- *   headers: [
- *     { header: 'No', dataKey: 'no', width: 15 },
- *     { header: 'Nama Zona', dataKey: 'zona', width: 50 },
- *     { header: 'Skor Kebersihan', dataKey: 'skor', width: 35 },
- *     { header: 'Status Evaluasi', dataKey: 'status', width: 60 }
- *   ],
- *   data: [
- *     { no: '1', zona: 'Zona 1 (Taman Depan)', skor: '88/100', status: 'Sangat Bersih & Terawat' },
- *     { no: '2', zona: 'Zona 2 (Area Kantin)', skor: '65/100', status: 'Perlu Perhatian Khusus pada Pemilahan Sampah Organik' }
- *   ],
- *   fileName: 'Laporan_Piket_Agustus_2026.pdf'
- * });
- */
 export async function generatePDFReport({
   title = 'PLH-INTELLIGENCE REPORT',
   subtitle = 'Laporan Data Lingkungan Sekolah',
@@ -66,7 +36,6 @@ export async function generatePDFReport({
       throw new Error('[createPDF] Parameter "data" harus berupa Array.');
     }
 
-    // Inisialisasi dokumen A4 dengan unit milimeter
     const doc = new jsPDF({
       orientation: orientation,
       unit: 'mm',
@@ -76,9 +45,8 @@ export async function generatePDFReport({
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Batas Margin Kertas (mm)
-    const marginTop = 18;
-    const marginBottom = 20;
+    const marginTop = 16;
+    const marginBottom = 18;
     const marginLeft = 14;
     const marginRight = 14;
     const contentWidth = pageWidth - marginLeft - marginRight;
@@ -86,50 +54,55 @@ export async function generatePDFReport({
     let currentY = marginTop;
 
     // ------------------------------------------------------------------------
-    // 1. HEADER DOKUMEN (Judul, Subtitle, Timestamp)
+    // 1. HEADER DOKUMEN & TIMESTAMP
     // ------------------------------------------------------------------------
-    // Garis Dekoratif Atas (Aksen Hijau Adiwiyata)
-    doc.setFillColor(16, 185, 129); // Hex #10B981
+    // Garis Aksen
+    doc.setFillColor(16, 185, 129);
     doc.rect(marginLeft, currentY, contentWidth, 2, 'F');
-    currentY += 8;
+    currentY += 7;
 
     // Judul Utama Laporan
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.setTextColor(15, 23, 42); // Slate 900 (#0F172A)
-    doc.text(title.toUpperCase(), marginLeft, currentY);
-    currentY += 6;
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.text(sanitizePdfText(title).toUpperCase(), marginLeft, currentY);
 
-    // Sub-judul / Kategori
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(71, 85, 105); // Slate 600 (#475569)
-    doc.text(subtitle, marginLeft, currentY);
-
-    // Tanggal Waktu Ekspor Otomatis
+    // Tanggal Waktu Cetak (Pojok Kanan)
     const now = new Date();
     const formattedDate = `Dicetak: ${now.toLocaleDateString('id-ID', {
       day: '2-digit',
       month: 'long',
       year: 'numeric'
-    })} | ${now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`;
+    })} ${now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`;
 
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.setTextColor(100, 116, 139); // Slate 500
+    doc.setTextColor(100, 116, 139);
     doc.text(formattedDate, pageWidth - marginRight, currentY, { align: 'right' });
 
-    currentY += 6;
+    currentY += 5;
+
+    // Sub-judul / Kategori DENGAN AUTO-WRAPPING AGAR TIDAK TABRAKAN
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(71, 85, 105);
+
+    const cleanSubtitle = sanitizePdfText(subtitle);
+    const subtitleLines = doc.splitTextToSize(cleanSubtitle, contentWidth);
+    doc.text(subtitleLines, marginLeft, currentY);
+
+    // Hitung penambahan Y secara dinamis berdasarkan baris subtitle
+    currentY += (subtitleLines.length * 4) + 4;
 
     // Garis Pemisah Header
-    doc.setDrawColor(226, 232, 240); // Slate 200
-    doc.setLineWidth(0.5);
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.4);
     doc.line(marginLeft, currentY, pageWidth - marginRight, currentY);
-    currentY += 8;
+    currentY += 6;
 
     // ------------------------------------------------------------------------
-    // 2. STABILISASI & NORMALISASI STRUKTUR KOLOM TABEL
+    // 2. NORMALISASI KOLOM TABEL
     // ------------------------------------------------------------------------
-    /** @type {Array<{header: string, dataKey: string, width: number}>} */
     const normalizedColumns = headers.map((col, index) => {
       if (typeof col === 'string') {
         return {
@@ -145,7 +118,6 @@ export async function generatePDFReport({
       };
     });
 
-    // Penyesuaian proporsional jika total lebar kolom diset manual melebihi contentWidth
     const totalAssignedWidth = normalizedColumns.reduce((sum, col) => sum + col.width, 0);
     const widthRatio = contentWidth / totalAssignedWidth;
     normalizedColumns.forEach((col) => {
@@ -153,41 +125,40 @@ export async function generatePDFReport({
     });
 
     // ------------------------------------------------------------------------
-    // 3. FUNGSI RENDER HEADER TABEL
+    // 3. RENDER HEADER TABEL
     // ------------------------------------------------------------------------
     const renderTableHeader = (yPos) => {
-      const headerHeight = 8;
-      // Background Header Tabel (Slate 800)
+      const headerHeight = 7.5;
       doc.setFillColor(30, 41, 59);
       doc.rect(marginLeft, yPos, contentWidth, headerHeight, 'F');
 
       let currentX = marginLeft;
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
-      doc.setTextColor(255, 255, 255); // Putih
+      doc.setFontSize(8.5);
+      doc.setTextColor(255, 255, 255);
 
       normalizedColumns.forEach((col) => {
-        // Potong teks header jika terlalu panjang
-        const truncatedHeader = doc.splitTextToSize(col.header, col.width - 4)[0] || '';
-        doc.text(truncatedHeader, currentX + 2, yPos + 5.5);
+        const cleanHeader = sanitizePdfText(col.header);
+        const truncatedHeader = doc.splitTextToSize(cleanHeader, col.width - 3)[0] || '';
+        doc.text(truncatedHeader, currentX + 2, yPos + 5);
         currentX += col.width;
       });
 
       return yPos + headerHeight;
     };
 
-    // Render Header Tabel Pertama Kali
     currentY = renderTableHeader(currentY);
 
     // ------------------------------------------------------------------------
-    // 4. RENDERING BARIS DATA TABEL (DENGAN AUTO PAGE BREAK & WRAPPING)
+    // 4. RENDER BARIS DATA TABEL
     // ------------------------------------------------------------------------
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
+    doc.setFontSize(8);
 
     data.forEach((row, rowIndex) => {
-      // Hitung baris teks terpanjang dari setiap sel dalam baris ini
       let maxCellLines = 1;
+
+      // Sanitasi & Split Teks Sel
       const cellTexts = normalizedColumns.map((col) => {
         let rawVal = '';
         if (Array.isArray(row)) {
@@ -197,43 +168,47 @@ export async function generatePDFReport({
           rawVal = row[col.dataKey] !== undefined ? String(row[col.dataKey]) : '';
         }
 
-        // Teks Wrapping Otomatis berdasarkan lebar sel
-        const wrappedLines = doc.splitTextToSize(rawVal, col.width - 4);
-        if (wrappedLines.length > maxCellLines) {
-          maxCellLines = wrappedLines.length;
+        const cleanVal = sanitizePdfText(rawVal);
+        const wrappedLines = doc.splitTextToSize(cleanVal, col.width - 4);
+        
+        // Memastikan minimal ada 1 baris
+        const linesCount = wrappedLines.length > 0 ? wrappedLines.length : 1;
+        if (linesCount > maxCellLines) {
+          maxCellLines = linesCount;
         }
-        return wrappedLines;
+
+        return wrappedLines.length > 0 ? wrappedLines : [''];
       });
 
-      const lineHeight = 4.5;
-      const rowHeight = Math.max(7, maxCellLines * lineHeight + 3);
+      const lineHeight = 4;
+      const rowHeight = Math.max(6.5, (maxCellLines * lineHeight) + 2.5);
 
-      // Cek apakah Y saat ini melebihi batas bawah kertas
+      // Auto Page Break jika mendekati batas bawah halaman
       if (currentY + rowHeight > pageHeight - marginBottom) {
         doc.addPage();
         currentY = marginTop;
-        currentY = renderTableHeader(currentY); // Render ulang header tabel di halaman baru
+        currentY = renderTableHeader(currentY);
       }
 
-      // Zebra Striping Background (Warna berselang-seling)
+      // Zebra Striping
       if (rowIndex % 2 === 1) {
-        doc.setFillColor(248, 250, 252); // Slate 50
+        doc.setFillColor(248, 250, 252);
         doc.rect(marginLeft, currentY, contentWidth, rowHeight, 'F');
       }
 
-      // Garis Batas Bawah Sel
-      doc.setDrawColor(241, 245, 249); // Slate 100
+      // Garis Bawah Sel
+      doc.setDrawColor(241, 245, 249);
       doc.setLineWidth(0.2);
       doc.line(marginLeft, currentY + rowHeight, pageWidth - marginRight, currentY + rowHeight);
 
-      // Cetak Teks pada Sel
+      // Cetak Teks Sel
       let currentX = marginLeft;
-      doc.setTextColor(51, 65, 85); // Slate 700
+      doc.setTextColor(51, 65, 85);
 
       normalizedColumns.forEach((col, colIdx) => {
         const lines = cellTexts[colIdx];
         lines.forEach((lineText, lineIdx) => {
-          doc.text(lineText, currentX + 2, currentY + 4.5 + lineIdx * lineHeight);
+          doc.text(lineText, currentX + 2, currentY + 4 + (lineIdx * lineHeight));
         });
         currentX += col.width;
       });
@@ -242,33 +217,26 @@ export async function generatePDFReport({
     });
 
     // ------------------------------------------------------------------------
-    // 5. FOOTER & PENOMORAN HALAMAN OTOMATIS (PAGE X OF Y)
+    // 5. FOOTER & HALAMAN (PAGE X OF Y)
     // ------------------------------------------------------------------------
     const totalPages = doc.getNumberOfPages();
 
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
+      const footerY = pageHeight - 8;
 
-      const footerY = pageHeight - 10;
-
-      // Garis Tipis di Atas Footer
       doc.setDrawColor(226, 232, 240);
       doc.setLineWidth(0.3);
-      doc.line(marginLeft, footerY - 3, pageWidth - marginRight, footerY - 3);
+      doc.line(marginLeft, footerY - 2, pageWidth - marginRight, footerY - 2);
 
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(148, 163, 184); // Slate 400
+      doc.setFontSize(7.5);
+      doc.setTextColor(148, 163, 184);
 
-      // Teks Kiri Footer
       doc.text('PLH-INTELLIGENCE — SMART Ekselensia Indonesia', marginLeft, footerY);
-
-      // Teks Kanan Footer (Halaman X dari Y)
-      const pageText = `Halaman ${i} dari ${totalPages}`;
-      doc.text(pageText, pageWidth - marginRight, footerY, { align: 'right' });
+      doc.text(`Halaman ${i} dari ${totalPages}`, pageWidth - marginRight, footerY, { align: 'right' });
     }
 
-    // Eksekusi Pemicu Unduhan Berkas PDF
     doc.save(fileName);
     return true;
   } catch (error) {

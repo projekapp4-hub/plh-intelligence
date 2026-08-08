@@ -1,11 +1,15 @@
 /**
- * FORMVIEW.JS - Modul Form Input Data Laporan Kebersihan & Preservasi
+ * FORMVIEW.JS - Modul Form Input Data Laporan Kebersihan & Preservasi (Refactored)
  * Path: src/pages/dashboard/views/formView.js
  * 
  * Mengimplementasikan arsitektur Single Page Application (SPA) card-based,
  * Live Compliance Engine, Bulk Action Controls, Drag & Drop Dropzone, 
- * serta Modal Quick Preview dengan proteksi tombol simpan terikat validasi.
+ * Modal Quick Preview, Kompresi Gambar Otomatis (imageCompressor.js),
+ * serta Penyimpanan Asinkron IndexedDB (storage.js - dss_records).
  */
+
+import { compressImage, fileToBase64 } from '../../../utils/imageCompressor.js';
+import { saveItem } from '../../../utils/storage.js';
 
 // Data Struktur 13 Poin Tugas Checklist dalam 5 Kategori
 const CHECKLIST_CATEGORIES = [
@@ -64,7 +68,7 @@ const CHECKLIST_CATEGORIES = [
   }
 ];
 
-// Array Penampung Berkas Foto yang Diunggah
+// Array Penampung Berkas Foto yang Diunggah (Menyimpan Objek { file, src })
 let uploadedPhotos = [];
 
 /**
@@ -205,12 +209,17 @@ export function render(container) {
             <div class="form-group">
               <label class="form-label">Unggah Foto Dokumentasi (Maksimal 5 Foto)</label>
               <div id="dropzone" class="dropzone-area">
-                <div class="dropzone-content">
+                <div class="dropzone-content" id="dropzoneContent">
                   <span class="dropzone-icon">☁️📷</span>
                   <p class="dropzone-text"><strong>Tarik & lepas file foto di sini</strong>, atau klik untuk memilih</p>
-                  <p class="dropzone-hint">Format yang didukung: JPG, PNG, WEBP (Maksimal 5 Foto)</p>
+                  <p class="dropzone-hint">Format yang didukung: JPG, PNG, WEBP (Maksimal 5 Foto). Foto akan dikompresi otomatis.</p>
                 </div>
                 <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple class="file-input-hidden">
+              </div>
+
+              <!-- Status Loading Kompresi Foto -->
+              <div id="uploadStatusText" class="upload-status-text" style="display: none; margin-top: 0.5rem; font-size: 0.8rem; color: #1b4332; font-weight: 600;">
+                ⏳ Memproses dan mengompresi gambar...
               </div>
 
               <!-- Grid Pratinjau Foto Thumbnail -->
@@ -914,7 +923,7 @@ function renderCategoriesMarkup() {
 }
 
 /**
- * Menghubungkan Semua Event Handlers & Logika Validasi Real-time
+ * Menghubungkan Semua Event Handlers, Logika Validasi, Kompresi Foto, dan Simpan Ke IndexedDB
  * @param {HTMLElement} container
  */
 function initFormLogic(container) {
@@ -925,6 +934,7 @@ function initFormLogic(container) {
   const dropzone = container.querySelector('#dropzone');
   const fileInput = container.querySelector('#fileInput');
   const photoPreviewGrid = container.querySelector('#photoPreviewGrid');
+  const uploadStatusText = container.querySelector('#uploadStatusText');
   const btnSubmitForm = container.querySelector('#btnSubmitForm');
   const btnQuickPreview = container.querySelector('#btnQuickPreview');
   const validationAlert = container.querySelector('#validationAlert');
@@ -991,7 +1001,7 @@ function initFormLogic(container) {
     validateFormCompleteness(answeredCount);
   }
 
-  // B. FUNGSI LOGIKA VALIDASI INPUT HEADER & SUBMIT STATE (TERMASUK TOMBOL SIMPAN DI MODAL)
+  // B. FUNGSI LOGIKA VALIDASI INPUT HEADER & SUBMIT STATE
   function validateFormCompleteness(answeredCount) {
     let isHeaderValid = true;
 
@@ -1004,7 +1014,6 @@ function initFormLogic(container) {
 
     const isFullyValid = isHeaderValid && (answeredCount === 13);
 
-    // Kunci atau aktifkan tombol simpan form utama & tombol konfirmasi modal
     if (btnSubmitForm) btnSubmitForm.disabled = !isFullyValid;
     if (btnConfirmSave) btnConfirmSave.disabled = !isFullyValid;
     if (validationAlert) validationAlert.style.display = isFullyValid ? 'none' : 'flex';
@@ -1061,7 +1070,7 @@ function initFormLogic(container) {
     });
   }
 
-  // E. LOGIKA DRAG & DROP FOTO DROPZONE
+  // E. LOGIKA DRAG & DROP FOTO DROPZONE + KOMPRESI GAMBAR (imageCompressor.js)
   if (dropzone && fileInput) {
     dropzone.addEventListener('click', () => fileInput.click());
 
@@ -1090,22 +1099,49 @@ function initFormLogic(container) {
     });
   }
 
-  function handlePhotoUploads(files) {
+  /**
+   * Mengolah file yang diunggah, mengompresinya secara asinkron, dan menyimpannya ke uploadedPhotos
+   * @param {File[]} files 
+   */
+  async function handlePhotoUploads(files) {
     const validFiles = files.filter(file => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type));
-    
+
+    if (validFiles.length === 0) return;
+
     if (uploadedPhotos.length + validFiles.length > 5) {
       alert('Maksimal foto yang dapat diunggah adalah 5 foto.');
       return;
     }
 
-    validFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        uploadedPhotos.push({ file, src: e.target.result });
-        renderPhotoThumbnails();
-      };
-      reader.readAsDataURL(file);
-    });
+    if (uploadStatusText) uploadStatusText.style.display = 'block';
+
+    for (const rawFile of validFiles) {
+      try {
+        // 1. Eksekusi Kompresi Gambar menggunakan imageCompressor.js
+        const compressedFile = await compressImage(rawFile, {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1280,
+          useWebWorker: true,
+          fileType: 'image/jpeg'
+        });
+
+        // 2. Konversi Hasil Kompresi ke Format Base64 Data URL
+        const base64Src = await fileToBase64(compressedFile);
+
+        // 3. Simpan ke penampung uploadedPhotos
+        uploadedPhotos.push({
+          file: compressedFile,
+          src: base64Src
+        });
+      } catch (err) {
+        console.error('❌ Gagal mengompresi foto:', err);
+        alert(`Gagal memproses berkas foto "${rawFile.name}": ${err.message}`);
+      }
+    }
+
+    if (uploadStatusText) uploadStatusText.style.display = 'none';
+    fileInput.value = ''; // Reset input file
+    renderPhotoThumbnails();
   }
 
   function renderPhotoThumbnails() {
@@ -1169,14 +1205,12 @@ function initFormLogic(container) {
       });
     });
 
-    // Pengecekan Kualifikasi Keabsahan Form
     const isHeaderValid = textInputs.every(id => {
       const field = form.querySelector(`#${id}`);
       return field && field.value.trim() !== '';
     });
     const isFullyValid = isHeaderValid && (answeredCount === 13);
 
-    // Set Status Tombol Simpan Modal Berdasarkan Validitas Form
     if (btnConfirmSave) {
       btnConfirmSave.disabled = !isFullyValid;
     }
@@ -1226,12 +1260,12 @@ function initFormLogic(container) {
 
       <div>
         <div class="preview-section-title">🖼️ Lampiran Dokumentasi</div>
-        <p>${uploadedPhotos.length} Foto diunggah.</p>
+        <p>${uploadedPhotos.length} Foto terkompresi diunggah.</p>
       </div>
     `;
   }
 
-  // G. SUBMIT FORM & SIMPAN KE LOCALSTORAGE
+  // G. SUBMIT FORM & SIMPAN KE INDEXEDDB VIA STORAGE.JS
   if (btnConfirmSave) {
     btnConfirmSave.addEventListener('click', executeSubmitForm);
   }
@@ -1241,12 +1275,27 @@ function initFormLogic(container) {
     executeSubmitForm();
   });
 
-  function executeSubmitForm() {
-    // Validasi ulang sebelum mengeksekusi
+  /**
+   * Eksekusi Penyimpanan Laporan Lengkap ke Object Store 'dss_records' di IndexedDB
+   */
+  async function executeSubmitForm() {
     let answeredCount = 0;
+    let trueCount = 0;
+    let falseCount = 0;
+    const checklistDetails = {};
+
     CHECKLIST_CATEGORIES.forEach(cat => {
       cat.items.forEach(task => {
-        if (form.querySelector(`input[name="${task.id}"]:checked`)) answeredCount++;
+        const selected = form.querySelector(`input[name="${task.id}"]:checked`);
+        if (selected) {
+          answeredCount++;
+          checklistDetails[task.id] = selected.value;
+          if (selected.value === 'TRUE') {
+            trueCount++;
+          } else {
+            falseCount++;
+          }
+        }
       });
     });
 
@@ -1262,32 +1311,56 @@ function initFormLogic(container) {
 
     closeModal();
 
-    // Buat Objek Laporan
-    const reportData = {
-      id: 'REP-' + Date.now(),
-      guruPiket: form.querySelector('#guruPiket').value,
-      tanggal: form.querySelector('#tanggalPiket').value,
-      petugas: [
-        form.querySelector('#petugas1').value,
-        form.querySelector('#petugas2').value,
-        form.querySelector('#petugas3').value
-      ],
-      catatan: form.querySelector('#catatanEvaluasi').value,
-      photoCount: uploadedPhotos.length,
-      createdAt: new Date().toISOString()
-    };
+    // Menonaktifkan tombol submit selama transaksi penyimpanan berlangsung
+    if (btnSubmitForm) {
+      btnSubmitForm.disabled = true;
+      btnSubmitForm.textContent = '⏳ Menyimpan ke Database...';
+    }
 
-    // Simpan data ke LocalStorage
-    const existingReports = JSON.parse(localStorage.getItem('plh_reports') || '[]');
-    existingReports.push(reportData);
-    localStorage.setItem('plh_reports', JSON.stringify(existingReports));
+    try {
+      const scorePercent = Math.round((trueCount / 13) * 100);
 
-    alert('✅ Laporan Kebersihan & Preservasi Lingkungan berhasil disimpan!');
+      // Mengambil daftar string Base64 dari foto yang telah terkompresi
+      const photoBase64Array = uploadedPhotos.map(item => item.src);
 
-    // Pindah Tampilan ke Cek Data (data.js) via SPA Router
-    const cekDataBtn = document.querySelector('.spa-nav-btn[data-view="data"]');
-    if (cekDataBtn) {
-      cekDataBtn.click();
+      // Membangun Objek Data Laporan Utuh
+      const reportData = {
+        id: 'REP-' + Date.now(),
+        guruPiket: form.querySelector('#guruPiket').value.trim(),
+        tanggal: form.querySelector('#tanggalPiket').value.trim(),
+        petugas: [
+          form.querySelector('#petugas1').value.trim(),
+          form.querySelector('#petugas2').value.trim(),
+          form.querySelector('#petugas3').value.trim()
+        ],
+        checklist: checklistDetails,
+        trueCount: trueCount,
+        falseCount: falseCount,
+        scorePercent: scorePercent,
+        catatan: form.querySelector('#catatanEvaluasi').value.trim(),
+        photos: photoBase64Array,
+        photoCount: photoBase64Array.length,
+        createdAt: new Date().toISOString()
+      };
+
+      // Simpan ke IndexedDB Object Store 'dss_records' via storage.js
+      await saveItem('dss_records', reportData);
+
+      alert('✅ Laporan Kebersihan & Preservasi Lingkungan berhasil disimpan ke Database IndexedDB!');
+
+      // Navigasi ke Tampilan Cek Data (data.js) via SPA Router
+      const cekDataBtn = document.querySelector('.spa-nav-btn[data-view="data"]');
+      if (cekDataBtn) {
+        cekDataBtn.click();
+      }
+    } catch (error) {
+      console.error('❌ Error penyimpanan ke IndexedDB:', error);
+      alert(`Gagal menyimpan laporan ke database: ${error.message}`);
+    } finally {
+      if (btnSubmitForm) {
+        btnSubmitForm.disabled = false;
+        btnSubmitForm.textContent = '💾 Simpan Laporan Data';
+      }
     }
   }
 

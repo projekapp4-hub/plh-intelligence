@@ -1,12 +1,18 @@
 /**
- * DATAVIEW.JS - Modul Tabel Data Laporan & Detail View (Page 3)
- * Path: src/pages/dashboard/views/dataView.js
+ * data.js - Modul Tabel Data Laporan & Detail View (Page 3)
+ * Path: src/pages/dashboard/views/data.js
  * 
  * Menyediakan tabel data laporan interaktif, pencarian real-time, 
- * filter status compliance, ekspor data, serta modal detail terperinci (Full Data View).
+ * filter status compliance, ekspor data (Excel & PDF Massal/Single), 
+ * serta modal detail terperinci (Full Data View).
+ * Terintegrasi secara asynchronous dengan Native IndexedDB via storage.js (Store: dss_records).
  */
 
-// Master Data Struktur 13 Poin Tugas Checklist untuk Referensi Detail Modal
+import { getAllItems, deleteItem, seedMockData } from '../../../utils/storage.js';
+import { generateExcelReport } from '../../../utils/createXLSX.js';
+import { generatePDFReport } from '../../../utils/createPDF.js';
+
+// Master Data Struktur 13 Poin Tugas Checklist untuk Referensi Detail Modal & Cetak PDF Single
 const MASTER_CHECKLIST_ITEMS = [
   { code: '1.1', category: 'Kebersihan & Sanitasi', label: 'Menyikat dan membersihkan WC lantai 1 dan lantai 2 sekolah.' },
   { code: '1.2', category: 'Kebersihan & Sanitasi', label: 'Menyapu dan mengepel koridor lantai 1 dan lantai 2 sekolah.' },
@@ -23,80 +29,181 @@ const MASTER_CHECKLIST_ITEMS = [
   { code: '5.2', category: 'Penghematan Air', label: 'Menyiram tanaman di green house menggunakan air tadah hujan di toren samping asrama.' }
 ];
 
-// Seed Dummy Data jika LocalStorage Masih Kosong
-const DUMMY_REPORTS = [
-  {
-    id: '#LAP-20260807-01',
-    guruPiket: 'Ahmad Fauzi, S.Pd.',
-    tanggal: '2026-08-07',
-    petugas: ['Muhammad Zaki', 'Aisyah Putri', 'Rizky Pratama'],
-    tasksStatus: {
-      'task_1_1': true, 'task_1_2': true, 'task_1_3': true,
-      'task_2_1': true, 'task_2_2': true, 'task_2_3': true, 'task_2_4': true,
-      'task_3_1': true, 'task_3_2': false, 'task_3_3': true,
-      'task_4_1': true,
-      'task_5_1': true, 'task_5_2': true
-    },
-    catatan: 'Seluruh kegiatan kebersihan koridor dan area toilet lantai 1 serta 2 berjalan dengan sangat lancar. Ditemukan sedikit kendala pada perawatan kolam ikan (3.2) karena pasokan pakan ikan sedang habis dan telah dilaporkan ke pihak sarana prasarana.',
-    photos: [
-      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
-      'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=400&q=80',
-      'https://images.unsplash.com/photo-1618060932014-4deda4932554?auto=format&fit=crop&w=400&q=80'
-    ],
-    createdAt: '2026-08-07T08:30:00.000Z'
-  },
-  {
-    id: '#LAP-20260806-02',
-    guruPiket: 'Siti Nurhaliza, S.T.',
-    tanggal: '2026-08-06',
-    petugas: ['Budi Santoso', 'Dewi Lestari', 'Fajar Ramadhan'],
-    tasksStatus: {
-      'task_1_1': true, 'task_1_2': true, 'task_1_3': false,
-      'task_2_1': true, 'task_2_2': true, 'task_2_3': false, 'task_2_4': true,
-      'task_3_1': true, 'task_3_2': true, 'task_3_3': false,
-      'task_4_1': true,
-      'task_5_1': false, 'task_5_2': true
-    },
-    catatan: 'Pengangkatan sampah ke bank sampah telah diselesaikan sesuai standar operasional. Pengecekan keran air toilet (5.1) mencatat adanya kebocoran kecil pada kran wudhu putra nomor 3, membutuhkan pergantian seal karet.',
-    photos: [
-      'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=400&q=80',
-      'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=400&q=80'
-    ],
-    createdAt: '2026-08-06T09:15:00.000Z'
-  },
-  {
-    id: '#LAP-20260805-03',
-    guruPiket: 'Hendro Utomo, M.Pd.',
-    tanggal: '2026-08-05',
-    petugas: ['Rina Kusuma', 'Hadi Wijaya', 'Siti Rahma'],
-    tasksStatus: {
-      'task_1_1': true, 'task_1_2': false, 'task_1_3': false,
-      'task_2_1': false, 'task_2_2': true, 'task_2_3': false, 'task_2_4': false,
-      'task_3_1': true, 'task_3_2': false, 'task_3_3': false,
-      'task_4_1': true,
-      'task_5_1': true, 'task_5_2': false
-    },
-    catatan: 'Pelaksanaan piket terkendala hujan deras dari pagi hingga siang hari. Beberapa poin luar ruangan seperti pembersihan drainase (1.3), penimbangan sampah (2.3), dan penyiraman tanaman green house (5.2) tidak dapat dilaksanakan secara optimal.',
-    photos: [
-      'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?auto=format&fit=crop&w=400&q=80'
-    ],
-    createdAt: '2026-08-05T10:00:00.000Z'
-  }
-];
-
 // Variable State Modul DataView
 let activeReportsData = [];
 let filteredReportsData = [];
 
 /**
+ * HELPER HITUNG SKOR & KATEGORI COMPLIANCE
+ */
+function calculateReportScore(report) {
+  let trueCount = 0;
+  const tasks = report.tasksStatus || {};
+  
+  Object.keys(tasks).forEach(key => {
+    const val = tasks[key];
+    const strVal = String(val).trim().toLowerCase();
+    if (val === true || strVal === 'true' || val === 1 || strVal === '1') {
+      trueCount++;
+    }
+  });
+
+  const percentage = Math.round((trueCount / 13) * 100);
+  let statusClass = 'badge-evaluasi';
+  let statusText = 'Perlu Evaluasi';
+  let filterCategory = 'PERLU_EVALUASI';
+
+  if (percentage >= 90) {
+    statusClass = 'badge-sangat-baik';
+    statusText = 'Sangat Baik';
+    filterCategory = 'SANGAT_BAIK';
+  } else if (percentage >= 75) {
+    statusClass = 'badge-baik';
+    statusText = 'Baik';
+    filterCategory = 'BAIK';
+  }
+
+  return { trueCount, percentage, statusClass, statusText, filterCategory };
+}
+
+/**
+ * HELPER PENYIAPAN DATA EKSPOR MASSAL
+ * Mengonversi struktur objek laporan yang kompleks menjadi format rata (flat) untuk tabel.
+ */
+function prepareExportData(reportsList) {
+  return reportsList.map((report, idx) => {
+    const { trueCount, percentage, statusText } = calculateReportScore(report);
+    const listPetugas = Array.isArray(report.petugas) ? report.petugas.join(', ') : String(report.petugas || '-');
+
+    return {
+      no: idx + 1,
+      id: report.id || '-',
+      tanggal: report.tanggal || '-',
+      guru_piket: report.guruPiket || '-',
+      petugas: listPetugas,
+      capaian: `${trueCount} / 13 Task`,
+      compliance: `${percentage}% (${statusText})`,
+      catatan: report.catatan || 'Tidak ada catatan.'
+    };
+  });
+}
+
+/**
+ * HELPER NORMALISASI DATA
+ * Memastikan toleransi penuh terhadap variasi nama properti (alias) serta format boolean ("TRUE", true, 1).
+ */
+function normalizeReportData(rawReport) {
+  if (!rawReport || typeof rawReport !== 'object') return null;
+
+  // 1. Normalisasi ID Laporan
+  const id = rawReport.id || rawReport._id || rawReport.key || '#LAP-UNKNOWN';
+
+  // 2. Normalisasi Guru Piket
+  const guruPiket = rawReport.guruPiket || rawReport.guru_piket || rawReport.penanggungJawab || rawReport.guru || 'Tidak Diketahui';
+
+  // 3. Normalisasi Tanggal Pelaksanaan
+  const tanggal = rawReport.tanggal || rawReport.tanggal_piket || rawReport.date || (rawReport.createdAt ? rawReport.createdAt.split('T')[0] : '1970-01-01');
+
+  // 4. Normalisasi Daftar Petugas (Array)
+  let petugas = [];
+  if (Array.isArray(rawReport.petugas)) {
+    petugas = rawReport.petugas;
+  } else if (Array.isArray(rawReport.tim_petugas)) {
+    petugas = rawReport.tim_petugas;
+  } else if (typeof rawReport.petugas === 'string') {
+    petugas = rawReport.petugas.split(',').map(s => s.trim()).filter(Boolean);
+  } else if (typeof rawReport.tim_petugas === 'string') {
+    petugas = rawReport.tim_petugas.split(',').map(s => s.trim()).filter(Boolean);
+  }
+
+  // 5. Normalisasi Task Status (13 Poin Checklist) - Mendukung `checklist`, `tasksStatus`, dll.
+  const rawTasks = rawReport.tasksStatus || rawReport.tasks || rawReport.checklist || rawReport.checklistData || {};
+  const tasksStatus = {};
+
+  const keyMapping = {
+    '1.1': 'task_1_1', '1.2': 'task_1_2', '1.3': 'task_1_3',
+    '2.1': 'task_2_1', '2.2': 'task_2_2', '2.3': 'task_2_3', '2.4': 'task_2_4',
+    '3.1': 'task_3_1', '3.2': 'task_3_2', '3.3': 'task_3_3',
+    '4.1': 'task_4_1',
+    '5.1': 'task_5_1', '5.2': 'task_5_2'
+  };
+
+  Object.entries(keyMapping).forEach(([codeKey, taskKey]) => {
+    const val = rawTasks[taskKey] !== undefined ? rawTasks[taskKey] : rawTasks[codeKey];
+    const strVal = String(val).trim().toLowerCase();
+    // Evaluasi toleran terhadap boolean, "TRUE", "true", 1, "1"
+    tasksStatus[taskKey] = (val === true || strVal === 'true' || val === 1 || strVal === '1');
+  });
+
+  // 6. Normalisasi Foto Lampiran
+  let photos = [];
+  if (Array.isArray(rawReport.photos)) {
+    photos = rawReport.photos;
+  } else if (Array.isArray(rawReport.foto)) {
+    photos = rawReport.foto;
+  } else if (Array.isArray(rawReport.images)) {
+    photos = rawReport.images;
+  } else if (typeof rawReport.photos === 'string' && rawReport.photos) {
+    photos = [rawReport.photos];
+  } else if (typeof rawReport.foto === 'string' && rawReport.foto) {
+    photos = [rawReport.foto];
+  }
+
+  // 7. Normalisasi Catatan Evaluasi
+  const catatan = rawReport.catatan || rawReport.catatanEvaluasi || rawReport.notes || rawReport.keterangan || 'Tidak ada catatan.';
+
+  // 8. Normalisasi Waktu Pembuatan (createdAt)
+  const createdAt = rawReport.createdAt || rawReport.created_at || (tanggal !== '1970-01-01' ? new Date(tanggal).toISOString() : new Date(0).toISOString());
+
+  return {
+    ...rawReport,
+    id,
+    guruPiket,
+    tanggal,
+    petugas,
+    tasksStatus,
+    photos,
+    catatan,
+    createdAt
+  };
+}
+
+/**
+ * Memuat Data dari IndexedDB (Store: dss_records) secara Asynchronous.
+ */
+async function loadInitialReportsData() {
+  try {
+    let items = await getAllItems('dss_records');
+    if (!items || items.length === 0) {
+      console.log('[data.js] Object Store dss_records di IndexedDB kosong. Mengisikan mock data awal...');
+      await seedMockData([], true);
+      items = await getAllItems('dss_records');
+    }
+
+    const normalizedItems = (items || []).map(item => normalizeReportData(item)).filter(Boolean);
+
+    // Urutkan data terkini ke terlama (Descending)
+    normalizedItems.sort((a, b) => {
+      const timeA = new Date(a.createdAt || a.tanggal).getTime();
+      const timeB = new Date(b.createdAt || b.tanggal).getTime();
+      return timeB - timeA;
+    });
+
+    activeReportsData = normalizedItems;
+  } catch (error) {
+    console.error('[data.js] Gagal mengambil data dari IndexedDB via storage.js:', error);
+    activeReportsData = [];
+  }
+  filteredReportsData = [...activeReportsData];
+}
+
+/**
  * Fungsi Utama Render Modul DataView (Page 3)
  * @param {HTMLElement} container - Elemen pembungkus #spaCanvas
  */
-export function render(container) {
-  // 1. Muat Data dari LocalStorage atau Dummy Data
-  loadInitialReportsData();
+export async function render(container) {
+  await loadInitialReportsData();
 
-  // 2. Injeksi Layout HTML Utama Halaman Data
   container.innerHTML = `
     <div class="data-page-wrapper">
       
@@ -117,20 +224,18 @@ export function render(container) {
         </div>
       </header>
 
-      <!-- BAGIAN B: BILAH ALAT PEMROSESAN DATA (SEARCH, FILTER & EXPORT) -->
+      <!-- BILAH ALAT PEMROSESAN DATA -->
       <section class="toolbar-card">
         <div class="toolbar-grid">
           
-          <!-- Search Bar -->
           <div class="toolbar-item search-box-wrapper">
             <label for="searchInput" class="toolbar-label">🔍 Cari Laporan</label>
             <div class="input-with-icon">
               <span class="search-icon">🔍</span>
-              <input type="text" id="searchInput" class="toolbar-input" placeholder="Cari Guru Piket atau Nama Petugas...">
+              <input type="text" id="searchInput" class="toolbar-input" placeholder="Cari Guru Piket, Petugas, ID Laporan...">
             </div>
           </div>
 
-          <!-- Dropdown Filter Status Compliance -->
           <div class="toolbar-item filter-box-wrapper">
             <label for="complianceFilter" class="toolbar-label">🎯 Filter Status Compliance</label>
             <select id="complianceFilter" class="toolbar-select">
@@ -141,7 +246,6 @@ export function render(container) {
             </select>
           </div>
 
-          <!-- Tombol Ekspor Massal -->
           <div class="toolbar-item export-buttons-wrapper">
             <label class="toolbar-label">📥 Ekspor Data Massal</label>
             <div class="export-btn-group">
@@ -157,7 +261,7 @@ export function render(container) {
         </div>
       </section>
 
-      <!-- BAGIAN A: TABEL UTAMA DATA LAPORAN -->
+      <!-- TABEL UTAMA DATA LAPORAN -->
       <section class="table-card">
         <div class="table-responsive-wrapper">
           <table class="data-table">
@@ -173,13 +277,10 @@ export function render(container) {
                 <th class="text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody id="reportsTableBody">
-              <!-- Baris Tabel Dirender secara Dinamis melalui JS -->
-            </tbody>
+            <tbody id="reportsTableBody"></tbody>
           </table>
         </div>
 
-        <!-- State Kosong (Empty State) -->
         <div id="emptyStateBox" class="empty-state-box" style="display: none;">
           <div class="empty-icon">📂</div>
           <h3 class="empty-title">Data Laporan Tidak Ditemukan</h3>
@@ -187,11 +288,10 @@ export function render(container) {
         </div>
       </section>
 
-      <!-- BAGIAN C: MODAL POP-UP DETAIL LAPORAN TERPERINCI (FULL DATA VIEW) -->
+      <!-- MODAL POP-UP DETAIL LAPORAN TERPERINCI -->
       <div id="fullDetailModal" class="modal-overlay" aria-hidden="true">
         <div class="modal-card modal-large">
           
-          <!-- 1. Header Modal -->
           <div class="modal-header">
             <div class="modal-header-title">
               <h2 class="modal-title">Detail Full Laporan Kebersihan & Preservasi</h2>
@@ -200,12 +300,8 @@ export function render(container) {
             <button type="button" id="btnCloseDetailModal" class="modal-close-btn" title="Tutup Modal">✕</button>
           </div>
 
-          <!-- Body Modal Full Data -->
-          <div class="modal-body modal-scrollable" id="modalFullDetailBody">
-            <!-- Konten Detail Full Data Dirender Dinamis -->
-          </div>
+          <div class="modal-body modal-scrollable" id="modalFullDetailBody"></div>
 
-          <!-- 6. Footer Modal -->
           <div class="modal-footer">
             <button type="button" id="btnCloseModalFooter" class="btn btn-secondary">Tutup Modal</button>
             <button type="button" id="btnPrintModalPDF" class="btn btn-primary">
@@ -216,7 +312,7 @@ export function render(container) {
         </div>
       </div>
 
-      <!-- MODAL PRATINJAU GAMBAR DOKUMENTASI (LIGHTBOX PHOTO) -->
+      <!-- MODAL LIGHTBOX PHOTO -->
       <div id="photoLightboxModal" class="modal-overlay lightbox-overlay" aria-hidden="true">
         <div class="lightbox-content">
           <button type="button" id="btnCloseLightbox" class="lightbox-close-btn">✕</button>
@@ -226,7 +322,6 @@ export function render(container) {
 
     </div>
 
-    <!-- STYLING SCOPED UNTUK DATAVIEW MODULE -->
     <style>
       .data-page-wrapper {
         display: flex;
@@ -236,7 +331,6 @@ export function render(container) {
         padding-bottom: 3rem;
       }
 
-      /* Card Common Layout */
       .data-header-card, .toolbar-card, .table-card {
         background-color: #ffffff;
         border: 1px solid var(--color-border, #e2e8f0);
@@ -260,12 +354,7 @@ export function render(container) {
         }
       }
 
-      .header-title-group {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-
+      .header-title-group { display: flex; align-items: center; gap: 1rem; }
       .header-icon { font-size: 2.2rem; }
       .page-title { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--color-primary, #1b4332); }
       .page-subtitle { margin: 0.2rem 0 0 0; font-size: 0.8rem; color: #64748b; }
@@ -282,7 +371,6 @@ export function render(container) {
       }
       .stat-value { color: var(--color-primary, #1b4332); font-weight: 800; }
 
-      /* Toolbar Search & Filter */
       .toolbar-card { padding: 1.25rem; }
       .toolbar-grid {
         display: grid;
@@ -305,18 +393,8 @@ export function render(container) {
         margin-bottom: 0.35rem;
       }
 
-      .input-with-icon {
-        position: relative;
-        display: flex;
-        align-items: center;
-      }
-
-      .search-icon {
-        position: absolute;
-        left: 0.75rem;
-        font-size: 0.85rem;
-        color: #94a3b8;
-      }
+      .input-with-icon { position: relative; display: flex; align-items: center; }
+      .search-icon { position: absolute; left: 0.75rem; font-size: 0.85rem; color: #94a3b8; }
 
       .toolbar-input, .toolbar-select {
         width: 100%;
@@ -335,10 +413,7 @@ export function render(container) {
         box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
       }
 
-      .export-btn-group {
-        display: flex;
-        gap: 0.5rem;
-      }
+      .export-btn-group { display: flex; gap: 0.5rem; }
 
       .btn-export {
         flex: 1;
@@ -361,12 +436,8 @@ export function render(container) {
       .btn-pdf { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
       .btn-pdf:hover { background-color: #fca5a5; }
 
-      /* Table Styles */
       .table-card { overflow: hidden; }
-      .table-responsive-wrapper {
-        width: 100%;
-        overflow-x: auto;
-      }
+      .table-responsive-wrapper { width: 100%; overflow-x: auto; }
 
       .data-table {
         width: 100%;
@@ -391,13 +462,9 @@ export function render(container) {
         color: #334155;
       }
 
-      .data-table tbody tr:hover {
-        background-color: #f8fafc;
-      }
-
+      .data-table tbody tr:hover { background-color: #f8fafc; }
       .text-center { text-align: center; }
 
-      /* Column Specific Format */
       .id-code {
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         font-weight: 700;
@@ -411,13 +478,7 @@ export function render(container) {
       .date-text { font-weight: 700; color: #1e293b; display: block; }
       .guru-text { font-size: 0.75rem; color: #64748b; display: block; margin-top: 0.1rem; }
 
-      /* Pills Tags for Petugas */
-      .pills-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.3rem;
-        max-width: 220px;
-      }
+      .pills-container { display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 220px; }
 
       .petugas-pill {
         font-size: 0.7rem;
@@ -429,12 +490,8 @@ export function render(container) {
         white-space: nowrap;
       }
 
-      .task-ratio {
-        font-weight: 700;
-        color: #334155;
-      }
+      .task-ratio { font-weight: 700; color: #334155; }
 
-      /* Status Badges */
       .status-badge {
         font-size: 0.7rem;
         font-weight: 700;
@@ -466,12 +523,7 @@ export function render(container) {
         color: #64748b;
       }
 
-      /* Action Buttons in Table */
-      .action-btn-group {
-        display: flex;
-        gap: 0.35rem;
-        justify-content: center;
-      }
+      .action-btn-group { display: flex; gap: 0.35rem; justify-content: center; }
 
       .btn-action {
         width: 32px;
@@ -491,29 +543,28 @@ export function render(container) {
       .btn-action-print:hover { background-color: #fef3c7; border-color: #d97706; color: #d97706; }
       .btn-action-delete:hover { background-color: #fee2e2; border-color: #dc2626; color: #dc2626; }
 
-      /* Empty State */
-      .empty-state-box {
-        padding: 3rem 1rem;
-        text-align: center;
-      }
+      .empty-state-box { padding: 3rem 1rem; text-align: center; }
       .empty-icon { font-size: 3rem; margin-bottom: 0.5rem; }
       .empty-title { font-size: 1.05rem; font-weight: 700; color: #334155; margin: 0; }
       .empty-desc { font-size: 0.8rem; color: #64748b; margin: 0.3rem 0 0 0; }
 
-      /* Modal Pop-up Styles (Large Modal) */
+      /* MODAL POP-UP & SCROLLING CONTROLS */
       .modal-overlay {
         position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background-color: rgba(15, 23, 42, 0.6);
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(15, 23, 42, 0.65);
         backdrop-filter: blur(4px);
         z-index: 200;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 1rem;
+        padding: 1.5rem;
         opacity: 0;
         visibility: hidden;
-        transition: all 0.25s ease;
+        transition: opacity 0.25s ease, visibility 0.25s ease;
       }
 
       .modal-overlay.active { opacity: 1; visibility: visible; }
@@ -522,15 +573,13 @@ export function render(container) {
         background-color: #ffffff;
         border-radius: 12px;
         width: 100%;
+        max-width: 850px;
+        max-height: 85vh;
+        height: auto;
         display: flex;
         flex-direction: column;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         overflow: hidden;
-      }
-
-      .modal-large {
-        max-width: 850px;
-        max-height: 92vh;
       }
 
       .modal-header {
@@ -540,14 +589,10 @@ export function render(container) {
         justify-content: space-between;
         align-items: center;
         background-color: #f8fafc;
+        flex-shrink: 0;
       }
 
-      .modal-header-title {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-      }
-
+      .modal-header-title { display: flex; align-items: center; gap: 0.75rem; }
       .modal-title { margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--color-primary, #1b4332); }
       
       .modal-id-badge {
@@ -566,10 +611,19 @@ export function render(container) {
 
       .modal-scrollable {
         padding: 1.25rem;
+        display: block; 
+        flex: 1 1 auto;
+        min-height: 0; 
         overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
+        overscroll-behavior: contain; 
+      }
+
+      .modal-scrollable .detail-section-card {
+        margin-bottom: 1.25rem;
+      }
+
+      .modal-scrollable .detail-section-card:last-child {
+        margin-bottom: 0;
       }
 
       .modal-footer {
@@ -579,9 +633,9 @@ export function render(container) {
         justify-content: flex-end;
         gap: 0.75rem;
         background-color: #f8fafc;
+        flex-shrink: 0;
       }
 
-      /* Modal Sections Styling (Full Uncut Data) */
       .detail-section-card {
         border: 1px solid #e2e8f0;
         border-radius: 10px;
@@ -597,11 +651,8 @@ export function render(container) {
         border-bottom: 1px solid #e2e8f0;
       }
 
-      .section-card-body {
-        padding: 1rem;
-      }
+      .section-card-body { padding: 1rem; }
 
-      /* Grid Identity Summary */
       .identity-grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -609,15 +660,12 @@ export function render(container) {
       }
 
       @media (min-width: 640px) {
-        .identity-grid {
-          grid-template-columns: repeat(3, 1fr);
-        }
+        .identity-grid { grid-template-columns: repeat(3, 1fr); }
       }
 
       .info-item-label { font-size: 0.75rem; color: #64748b; font-weight: 600; }
       .info-item-value { font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-top: 0.15rem; }
 
-      /* Full Uncut Checklist Matrix Table */
       .uncut-matrix-table {
         width: 100%;
         border-collapse: collapse;
@@ -658,7 +706,6 @@ export function render(container) {
         display: inline-block;
       }
 
-      /* Full Gallery Photo Grid */
       .gallery-photo-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -686,7 +733,6 @@ export function render(container) {
         object-fit: cover;
       }
 
-      /* Full Narrative Text */
       .full-narrative-text {
         font-size: 0.85rem;
         line-height: 1.6;
@@ -695,7 +741,6 @@ export function render(container) {
         margin: 0;
       }
 
-      /* Lightbox Overlay */
       .lightbox-overlay { z-index: 300; background-color: rgba(0, 0, 0, 0.85); }
       .lightbox-content { position: relative; max-width: 90vw; max-height: 90vh; }
       .lightbox-content img { max-width: 100%; max-height: 85vh; border-radius: 8px; object-fit: contain; }
@@ -716,30 +761,11 @@ export function render(container) {
     </style>
   `;
 
-  // 3. Inisialisasi Event Listener Logic
   initDataPageLogic(container);
 }
 
 /**
- * Memuat Data dari LocalStorage atau Inisialisasi Dummy Data
- */
-function loadInitialReportsData() {
-  const stored = localStorage.getItem('plh_reports');
-  if (stored) {
-    try {
-      activeReportsData = JSON.parse(stored);
-    } catch (e) {
-      activeReportsData = DUMMY_REPORTS;
-    }
-  } else {
-    activeReportsData = DUMMY_REPORTS;
-    localStorage.setItem('plh_reports', JSON.stringify(DUMMY_REPORTS));
-  }
-  filteredReportsData = [...activeReportsData];
-}
-
-/**
- * Menghubungkan Semua Event Handler, Filter, dan Modal Interaktif
+ * Inisialisasi Event Listener & Logika Integrasi Ekspor Modul
  * @param {HTMLElement} container 
  */
 function initDataPageLogic(container) {
@@ -764,35 +790,159 @@ function initDataPageLogic(container) {
   const lightboxImage = container.querySelector('#lightboxImage');
   const btnCloseLightbox = container.querySelector('#btnCloseLightbox');
 
-  // A. FUNGSI UNTUK MENGHITUNG STATISTIK SCORING SATU LAPORAN
-  function calculateReportScore(report) {
-    let trueCount = 0;
-    const tasks = report.tasksStatus || {};
-    
-    // Hitung jumlah TRUE dari 13 task
-    Object.keys(tasks).forEach(key => {
-      if (tasks[key] === true) trueCount++;
+  // =========================================================================
+  // 1. INTEGRASI EKSPOR EXCEL MASSAL (.XLSX)
+  // =========================================================================
+  if (btnExportExcel) {
+    btnExportExcel.addEventListener('click', async () => {
+      if (!filteredReportsData || filteredReportsData.length === 0) {
+        alert('⚠️ Tidak ada data laporan yang tersedia untuk diekspor.');
+        return;
+      }
+
+      try {
+        btnExportExcel.disabled = true;
+        btnExportExcel.textContent = '⏳ Memproses...';
+
+        const exportRows = prepareExportData(filteredReportsData);
+
+        await generateExcelReport({
+          sheetName: 'Laporan Kebersihan PLH',
+          columns: [
+            { header: 'No', key: 'no', width: 8 },
+            { header: 'ID Laporan', key: 'id', width: 18 },
+            { header: 'Tanggal', key: 'tanggal', width: 15 },
+            { header: 'Guru Piket', key: 'guru_piket', width: 22 },
+            { header: 'Tim Petugas', key: 'petugas', width: 30 },
+            { header: 'Capaian Task', key: 'capaian', width: 15 },
+            { header: 'Skor Compliance', key: 'compliance', width: 22 },
+            { header: 'Catatan Evaluasi', key: 'catatan', width: 45 }
+          ],
+          data: exportRows,
+          fileName: `Laporan_PLH_Massal_${new Date().toISOString().split('T')[0]}.xlsx`
+        });
+
+      } catch (err) {
+        alert(`❌ Gagal mengekspor Excel: ${err.message}`);
+      } finally {
+        btnExportExcel.disabled = false;
+        btnExportExcel.innerHTML = '📊 Export Excel';
+      }
     });
-
-    const percentage = Math.round((trueCount / 13) * 100);
-    let statusClass = 'badge-evaluasi';
-    let statusText = 'Perlu Evaluasi';
-    let filterCategory = 'PERLU_EVALUASI';
-
-    if (percentage >= 90) {
-      statusClass = 'badge-sangat-baik';
-      statusText = 'Sangat Baik';
-      filterCategory = 'SANGAT_BAIK';
-    } else if (percentage >= 75) {
-      statusClass = 'badge-baik';
-      statusText = 'Baik';
-      filterCategory = 'BAIK';
-    }
-
-    return { trueCount, percentage, statusClass, statusText, filterCategory };
   }
 
-  // B. FUNGSI RENDER TABEL UTAMA DATA LAPORAN
+  // =========================================================================
+  // 2. INTEGRASI EKSPOR PDF MASSAL (.PDF LANDSCAPE)
+  // =========================================================================
+  if (btnExportPDF) {
+    btnExportPDF.addEventListener('click', async () => {
+      if (!filteredReportsData || filteredReportsData.length === 0) {
+        alert('⚠️ Tidak ada data laporan yang tersedia untuk diekspor.');
+        return;
+      }
+
+      try {
+        btnExportPDF.disabled = true;
+        btnExportPDF.textContent = '⏳ Memproses...';
+
+        const exportRows = prepareExportData(filteredReportsData);
+
+        await generatePDFReport({
+          title: 'LAPORAN EVALUASI KEBERSIHAN & PRESERVASI LINGKUNGAN',
+          subtitle: 'Rekapitulasi Data Pelaksanaan Piket Adiwiyata (PLH-Intelligence)',
+          orientation: 'landscape',
+          headers: [
+            { header: 'No', dataKey: 'no', width: 10 },
+            { header: 'ID Laporan', dataKey: 'id', width: 30 },
+            { header: 'Tanggal', dataKey: 'tanggal', width: 22 },
+            { header: 'Guru Piket', dataKey: 'guru_piket', width: 35 },
+            { header: 'Tim Petugas', dataKey: 'petugas', width: 45 },
+            { header: 'Capaian', dataKey: 'capaian', width: 20 },
+            { header: 'Compliance', dataKey: 'compliance', width: 32 },
+            { header: 'Catatan Evaluasi', dataKey: 'catatan', width: 75 }
+          ],
+          data: exportRows,
+          fileName: `Laporan_PLH_Massal_${new Date().toISOString().split('T')[0]}.pdf`
+        });
+
+      } catch (err) {
+        alert(`❌ Gagal mengekspor PDF Massal: ${err.message}`);
+      } finally {
+        btnExportPDF.disabled = false;
+        btnExportPDF.innerHTML = '📄 Export PDF';
+      }
+    });
+  }
+
+  // =========================================================================
+  // 3. INTEGRASI CETAK PDF PER-LAPORAN (SINGLE REPORT PDF)
+  // =========================================================================
+  async function exportSingleReportPDF(reportId) {
+    const report = activeReportsData.find(r => r.id === reportId);
+    if (!report) {
+      alert('⚠️ Data laporan tidak ditemukan.');
+      return;
+    }
+
+    try {
+      const { trueCount, percentage, statusText } = calculateReportScore(report);
+      const listPetugas = Array.isArray(report.petugas) ? report.petugas.join(', ') : String(report.petugas || '-');
+
+      // Susun data 13 Poin Task ke dalam format tabel PDF
+      const keyMap = {
+        '1.1': 'task_1_1', '1.2': 'task_1_2', '1.3': 'task_1_3',
+        '2.1': 'task_2_1', '2.2': 'task_2_2', '2.3': 'task_2_3', '2.4': 'task_2_4',
+        '3.1': 'task_3_1', '3.2': 'task_3_2', '3.3': 'task_3_3',
+        '4.1': 'task_4_1',
+        '5.1': 'task_5_1', '5.2': 'task_5_2'
+      };
+
+      const taskTableRows = MASTER_CHECKLIST_ITEMS.map(item => {
+        const taskKey = keyMap[item.code];
+        const val = report.tasksStatus[taskKey] !== undefined ? report.tasksStatus[taskKey] : report.tasksStatus[item.code];
+        const strVal = String(val).trim().toLowerCase();
+        const isDone = (val === true || strVal === 'true' || val === 1 || strVal === '1');
+
+        return {
+          code: item.code,
+          category: item.category,
+          label: item.label,
+          status: isDone ? '✓ DIKERJAKAN' : '✕ TIDAK DIKERJAKAN'
+        };
+      });
+
+      await generatePDFReport({
+        title: `DOKUMEN EVALUASI LAPORAN ${report.id}`,
+        subtitle: `Guru Piket: ${report.guruPiket} | Tanggal: ${report.tanggal} | Petugas: ${listPetugas} | Skor: ${percentage}% (${statusText})`,
+        orientation: 'portrait',
+        headers: [
+          { header: 'No', dataKey: 'code', width: 15 },
+          { header: 'Kategori Indikator', dataKey: 'category', width: 45 },
+          { header: 'Deskripsi Detail Indikator Tugas', dataKey: 'label', width: 90 },
+          { header: 'Status Task', dataKey: 'status', width: 32 }
+        ],
+        data: taskTableRows,
+        fileName: `Detail_${report.id.replace('#', '')}.pdf`
+      });
+
+    } catch (err) {
+      alert(`❌ Gagal mencetak PDF Laporan: ${err.message}`);
+    }
+  }
+
+  // Listener Tombol Cetak PDF pada Modal
+  if (btnPrintModalPDF) {
+    btnPrintModalPDF.addEventListener('click', () => {
+      const reportId = modalReportIdBadge ? modalReportIdBadge.textContent : null;
+      if (reportId) {
+        exportSingleReportPDF(reportId);
+      }
+    });
+  }
+
+  // =========================================================================
+  // 4. RENDER TABEL & ACTION LISTENERS
+  // =========================================================================
   function renderTableRows() {
     if (!reportsTableBody) return;
 
@@ -812,45 +962,37 @@ function initDataPageLogic(container) {
 
       return `
         <tr>
-          <!-- Kolom ID Laporan -->
           <td><span class="id-code">${report.id}</span></td>
 
-          <!-- Kolom Tanggal & Guru Piket -->
           <td>
             <span class="date-text">${report.tanggal}</span>
             <span class="guru-text">🧑‍🏫 ${report.guruPiket}</span>
           </td>
 
-          <!-- Kolom Tim Petugas -->
           <td>
             <div class="pills-container">
               ${(report.petugas || []).map(p => `<span class="petugas-pill">${p}</span>`).join('')}
             </div>
           </td>
 
-          <!-- Kolom Capaian Poin -->
           <td class="text-center">
             <span class="task-ratio">${trueCount} / 13 Task</span>
           </td>
 
-          <!-- Kolom Skor Compliance -->
           <td>
             <span class="status-badge ${statusClass}">${percentage}% - ${statusText}</span>
           </td>
 
-          <!-- Kolom Media -->
           <td class="text-center">
             <span class="media-indicator">📷 ${photoCount} Foto</span>
           </td>
 
-          <!-- Kolom Catatan Evaluasi -->
           <td>
             <div class="ellipsis-text" title="${report.catatan || '-'}">
               ${report.catatan || 'Tidak ada catatan.'}
             </div>
           </td>
 
-          <!-- Kolom Aksi -->
           <td class="text-center">
             <div class="action-btn-group">
               <button type="button" class="btn-action btn-action-view" data-id="${report.id}" title="Lihat Detail Full Data">
@@ -859,7 +1001,7 @@ function initDataPageLogic(container) {
               <button type="button" class="btn-action btn-action-print" data-id="${report.id}" title="Cetak PDF">
                 🖨️
               </button>
-              <button type="button" class="btn-action btn-action-delete" data-id="${report.id}" title="Hapus Laporan">
+              <button type="button" class="btn-action btn-action-delete" data-id="${report.id}" title="Hapus Laporan dari IndexedDB">
                 🗑️
               </button>
             </div>
@@ -868,23 +1010,21 @@ function initDataPageLogic(container) {
       `;
     }).join('');
 
-    // Hubungkan Event Listener untuk Tombol-tombol Aksi di Baris Tabel
     attachTableActionEvents();
   }
 
-  // C. FUNGSI FILTER DAN PENCARIAN REAL-TIME
   function applySearchAndFilter() {
     const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
     const filterVal = complianceFilter ? complianceFilter.value : 'ALL';
 
     filteredReportsData = activeReportsData.filter(report => {
-      // 1. Logika Pencarian Teks (Guru Piket & Petugas)
       const guruMatch = (report.guruPiket || '').toLowerCase().includes(query);
-      const petugasMatch = (report.petugas || []).some(p => p.toLowerCase().includes(query));
+      const petugasMatch = Array.isArray(report.petugas)
+        ? report.petugas.some(p => String(p).toLowerCase().includes(query))
+        : String(report.petugas || '').toLowerCase().includes(query);
       const idMatch = (report.id || '').toLowerCase().includes(query);
       const matchesSearch = guruMatch || petugasMatch || idMatch;
 
-      // 2. Logika Filter Status Kepatuhan
       const { filterCategory } = calculateReportScore(report);
       const matchesFilter = (filterVal === 'ALL') || (filterCategory === filterVal);
 
@@ -897,9 +1037,7 @@ function initDataPageLogic(container) {
   if (searchInput) searchInput.addEventListener('input', applySearchAndFilter);
   if (complianceFilter) complianceFilter.addEventListener('change', applySearchAndFilter);
 
-  // D. EVENT HANDLER TOMBOL AKSI TABEL (DETAIL, PRINT, DELETE)
   function attachTableActionEvents() {
-    // Tombol Lihat Detail
     container.querySelectorAll('.btn-action-view').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
@@ -907,32 +1045,38 @@ function initDataPageLogic(container) {
       });
     });
 
-    // Tombol Cetak PDF Individual
     container.querySelectorAll('.btn-action-print').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
-        alert(`🖨️ Memproses pencetakan dokumen PDF untuk laporan ${id}...`);
+        exportSingleReportPDF(id);
       });
     });
 
-    // Tombol Hapus Baris
     container.querySelectorAll('.btn-action-delete').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-id');
-        if (confirm(`Apakah Anda yakin ingin menghapus laporan ${id}? Data yang dihapus tidak dapat dikembalikan.`)) {
-          deleteReportItem(id);
+        if (confirm(`Apakah Anda yakin ingin menghapus laporan ${id} dari database IndexedDB? Data yang dihapus tidak dapat dikembalikan.`)) {
+          await deleteReportItem(id);
         }
       });
     });
   }
 
-  function deleteReportItem(id) {
-    activeReportsData = activeReportsData.filter(r => r.id !== id);
-    localStorage.setItem('plh_reports', JSON.stringify(activeReportsData));
-    applySearchAndFilter();
+  async function deleteReportItem(id) {
+    try {
+      await deleteItem('dss_records', id);
+      activeReportsData = activeReportsData.filter(r => r.id !== id);
+      applySearchAndFilter();
+      console.log(`[data.js] Berhasil menghapus laporan ${id} dari IndexedDB.`);
+    } catch (error) {
+      console.error(`[data.js] Gagal menghapus laporan ${id} dari IndexedDB:`, error);
+      alert(`Gagal menghapus laporan dari database: ${error.message}`);
+    }
   }
 
-  // E. MODUL POP-UP MODAL DETAIL LAPORAN TERPERINCI (FULL DATA VIEW)
+  // =========================================================================
+  // 5. MODAL DETAIL FULL DATA
+  // =========================================================================
   function openFullDetailModal(reportId) {
     const report = activeReportsData.find(r => r.id === reportId);
     if (!report) return;
@@ -941,9 +1085,7 @@ function initDataPageLogic(container) {
 
     if (modalReportIdBadge) modalReportIdBadge.textContent = report.id;
 
-    // Render Konten Modal Full Data (Tanpa Diringkas)
     modalFullDetailBody.innerHTML = `
-      <!-- BAGIAN 1: RINGKASAN IDENTITAS & METRIK PERFORMANCE -->
       <section class="detail-section-card">
         <div class="section-card-header">📌 Bagian 1: Identitas Pelaksanaan & Metrik Performa</div>
         <div class="section-card-body">
@@ -966,7 +1108,7 @@ function initDataPageLogic(container) {
             </div>
             <div style="grid-column: 1 / -1;">
               <span class="info-item-label">Tim Petugas Harian (Piket):</span>
-              <div class="info-item-value" style="display: flex; gap: 0.5rem; margin-top: 0.3rem;">
+              <div class="info-item-value" style="display: flex; gap: 0.5rem; margin-top: 0.3rem; flex-wrap: wrap;">
                 ${(report.petugas || []).map(p => `<span class="petugas-pill" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;">👤 ${p}</span>`).join('')}
               </div>
             </div>
@@ -974,7 +1116,6 @@ function initDataPageLogic(container) {
         </div>
       </section>
 
-      <!-- BAGIAN 2: MATRIKS LENGKAP STATUS 13 POIN TUGAS (FULL UNCUT LIST) -->
       <section class="detail-section-card">
         <div class="section-card-header">
           ✅ Bagian 2: Matriks Lengkap Status 13 Poin Tugas Checklist (${trueCount} / 13 Dikerjakan)
@@ -996,7 +1137,6 @@ function initDataPageLogic(container) {
         </div>
       </section>
 
-      <!-- BAGIAN 3: GALERI BUKTI MEDIA FOTO -->
       <section class="detail-section-card">
         <div class="section-card-header">
           📷 Bagian 3: Galeri Bukti Media Foto (${report.photos ? report.photos.length : 0} Foto)
@@ -1016,7 +1156,6 @@ function initDataPageLogic(container) {
         </div>
       </section>
 
-      <!-- BAGIAN 4: NARASI CATATAN EVALUASI UTUH -->
       <section class="detail-section-card">
         <div class="section-card-header">📝 Bagian 4: Narasi Catatan Evaluasi Utuh</div>
         <div class="section-card-body">
@@ -1025,7 +1164,6 @@ function initDataPageLogic(container) {
       </section>
     `;
 
-    // Hubungkan Event Listener Pembesaran Foto Lightbox
     modalFullDetailBody.querySelectorAll('.gallery-photo-item').forEach(item => {
       item.addEventListener('click', () => {
         const src = item.getAttribute('data-src');
@@ -1034,12 +1172,13 @@ function initDataPageLogic(container) {
       });
     });
 
-    if (fullDetailModal) fullDetailModal.classList.add('active');
+    if (fullDetailModal) {
+      fullDetailModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
   }
 
-  // Render Baris Matriks 13 Poin Utuh (Full Uncut List)
   function renderUncutTaskMatrix(tasksStatus = {}) {
-    // Map status tugas berdasarkan id task (misal task_1_1)
     const keyMap = {
       '1.1': 'task_1_1', '1.2': 'task_1_2', '1.3': 'task_1_3',
       '2.1': 'task_2_1', '2.2': 'task_2_2', '2.3': 'task_2_3', '2.4': 'task_2_4',
@@ -1050,7 +1189,10 @@ function initDataPageLogic(container) {
 
     return MASTER_CHECKLIST_ITEMS.map((item) => {
       const taskKey = keyMap[item.code];
-      const isDone = tasksStatus[taskKey] === true;
+      const val = tasksStatus[taskKey] !== undefined ? tasksStatus[taskKey] : tasksStatus[item.code];
+      
+      const strVal = String(val).trim().toLowerCase();
+      const isDone = (val === true || strVal === 'true' || val === 1 || strVal === '1');
 
       return `
         <tr>
@@ -1069,9 +1211,11 @@ function initDataPageLogic(container) {
     }).join('');
   }
 
-  // F. EVENT CLOSE MODAL DETAIL & LIGHTBOX
   function closeDetailModal() {
-    if (fullDetailModal) fullDetailModal.classList.remove('active');
+    if (fullDetailModal) {
+      fullDetailModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
   }
 
   if (btnCloseDetailModal) btnCloseDetailModal.addEventListener('click', closeDetailModal);
@@ -1083,26 +1227,5 @@ function initDataPageLogic(container) {
     });
   }
 
-  if (btnPrintModalPDF) {
-    btnPrintModalPDF.addEventListener('click', () => {
-      const id = modalReportIdBadge ? modalReportIdBadge.textContent : '';
-      alert(`🖨️ Mengunduh berkas resmi PDF terformat untuk laporan ${id}...`);
-    });
-  }
-
-  // G. EKSPOR DATA MASSAL (EXCEL & PDF)
-  if (btnExportExcel) {
-    btnExportExcel.addEventListener('click', () => {
-      alert(`📊 Mengunduh data ${filteredReportsData.length} laporan dalam format spreadsheet Excel (.xlsx)...`);
-    });
-  }
-
-  if (btnExportPDF) {
-    btnExportPDF.addEventListener('click', () => {
-      alert(`📄 Mengunduh ringkasan ${filteredReportsData.length} laporan dalam format dokumen terformat PDF...`);
-    });
-  }
-
-  // Inisialisasi awal render tabel
   renderTableRows();
 }
