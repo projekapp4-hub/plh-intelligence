@@ -62,7 +62,7 @@ Buatlah berkas bernama `.env` secara manual pada direktori utama (*root director
 > **Catatan Penting:**
 > * Selalu gunakan awalan `VITE_` pada nama variabel lingkungan agar dapat diakses di dalam kode frontend Vite (contoh: `VITE_API_BASE_URL=https://api.example.com`).
 > * Pastikan berkas `.env` **tidak pernah diunggah** ke GitHub demi menjaga kerahasiaan kunci API atau data sensitif lainnya.
-> * Variabel yang dibuat adalah `VITE_GEMINI_API_KEY=AQ.Ab8RN6JNAuVf_50YtmEGcV7b41uoS3sR7YoAENFQdfPfC5jARQ`
+> * Variabel yang dibuat adalah `VITE_GEMINI_API_KEY=`
 > 
 
 ---
