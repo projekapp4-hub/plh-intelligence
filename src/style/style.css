@@ -15,14 +15,14 @@
   /* --- PALET WARNA LINGKUNGAN HIDUP (Sesuai Gambar) --- */
   --color-primary: #2C5E3B;        /* Hutan Dalam - RGB(44, 94, 59) */
   --color-primary-hover: #224a2e;  /* Versi lebih gelap untuk efek hover */
-  
+
   --color-secondary: #619170;      /* Sage Green - RGB(97, 145, 112) */
   --color-secondary-hover: #4e775a;
 
   --color-surface-muted: #ABC4B2;  /* Soft Sage Gray - RGB(171, 196, 178) */
-  
+
   --color-bg-light: #B5F7C9;       /* Mint Dew Light - RGB(181, 247, 201) */
-  
+
   --color-accent: #87FFAB;         /* Vibrant Spring Green - RGB(135, 255, 171) */
   --color-accent-hover: #62f28d;
 
@@ -35,7 +35,7 @@
 
   /* --- TIPOGRAFI RESPANSIF --- */
   --font-primary: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  
+
   --text-xs: 0.75rem;     /* 12px */
   --text-sm: 0.875rem;    /* 14px */
   --text-base: 1rem;      /* 16px */
@@ -94,6 +94,34 @@ body {
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Skip link untuk navigasi keyboard accessibility */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: var(--space-md);
+  background: var(--color-primary);
+  color: var(--color-accent);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-sm);
+  z-index: 9999;
+  font-weight: 700;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: var(--space-md);
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Global focus-visible indicator untuk A11y */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
 }
 
 /* Penanganan Aset Media Responsif */

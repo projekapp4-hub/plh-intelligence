@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PLH-Intelligence | DSS Analisis Piket Lingkungan SMART Ekselensia Indonesia</title>
-  
+
   <!-- Meta Tag SEO & Deskripsi Aplikasi -->
   <meta name="description" content="Sistem Pendukung Keputusan (DSS) berbasis analisis data untuk mengoptimalkan kegiatan piket Pelajaran Lingkungan Hidup di SMART Ekselensia Indonesia (Sekolah Adiwiyata Tingkat Provinsi).">
-  
+
   <!-- Favicon System -->
   <link rel="icon" type="image/x-icon" href="./public/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="./public/favicon-16x16.png">
@@ -21,11 +21,14 @@
 
   <!-- Menggunakan Path Alias Vite (@) untuk Styling Terpusat -->
   <link rel="stylesheet" href="/src/style/style.css">
-  
+
   <!-- Menggunakan Path Alias Vite (@) untuk Styling Spesifik Landing Page -->
   <link rel="stylesheet" href="/src/pages/landing/landing.css">
 </head>
 <body>
+
+  <!-- Skip link untuk aksesibilitas keyboard -->
+  <a href="#main-content" class="skip-link">Lompat ke konten utama</a>
 
   <!-- ==========================================================================
      HEADER & NAVIGATION BAR
@@ -39,14 +42,14 @@
       </a>
 
       <!-- Tombol Hamburger Menu (Mobile View) -->
-      <button class="nav-toggle" id="navToggle" aria-label="Buka Navigasi Mobile">
+      <button class="nav-toggle" id="navToggle" aria-label="Buka Menu Navigasi Mobile" aria-expanded="false" aria-controls="navMenu">
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
       </button>
 
-      <!-- Navigasi Utama (Navigasi Ke Metrik Dampak Palsu Telah Dihapus) -->
-      <nav class="nav-menu" id="navMenu">
+      <!-- Navigasi Utama -->
+      <nav class="nav-menu" id="navMenu" aria-label="Navigasi Utama">
         <ul class="nav-list">
           <li class="nav-item"><a href="#tentang" class="nav-link">Tentang App</a></li>
           <li class="nav-item"><a href="#adiwiyata" class="nav-link">Profil Adiwiyata</a></li>
@@ -59,152 +62,168 @@
     </div>
   </header>
 
-  <!-- ==========================================================================
-     HERO SECTION
-     ========================================================================== -->
-  <section id="tentang" class="hero-section section">
-    <div class="container grid hero-grid">
-      <div class="hero-content">
-        <div class="badge badge-vibrant hero-badge">
-          <span>🌱 Sekolah Adiwiyata Tingkat Provinsi</span>
-        </div>
-        <h1 class="hero-title">
-          Transformasi Data Piket Lingkungan Menjadi Keputusan Presisi
-        </h1>
-        <p class="hero-description">
-          <strong>PLH-Intelligence</strong> adalah platform <em>Decision Support System (DSS)</em> terpadu di <strong>SMART Ekselensia Indonesia</strong>. Platform ini mengolah laporan rutin piket Pelajaran Lingkungan Hidup (PLH) menjadi rekomendasi strategis untuk mempertahankan budaya ekologis sekolah.
-        </p>
-        <div class="hero-cta-group">
-          <a href="./login.html" class="btn btn-accent btn-lg">
-            Akses Dashboard DSS
-          </a>
-          <a href="#dss-features" class="btn btn-outline btn-lg">
-            Pelajari Cara Kerja
-          </a>
-        </div>
-      </div>
-
-      <!-- Hero Card Overview (Tanpa Angka/Persentase Palsu) -->
-      <div class="hero-visual">
-        <div class="card hero-card">
-          <div class="card-header flex-between">
-            <span class="badge badge-primary">Sistem Pendukung Keputusan</span>
-            <span class="badge badge-accent">Piket PLH</span>
+  <main id="main-content">
+    <!-- ==========================================================================
+       HERO SECTION
+       ========================================================================== -->
+    <section id="tentang" class="hero-section section" aria-labelledby="hero-heading">
+      <div class="container grid hero-grid">
+        <div class="hero-content">
+          <div class="badge badge-vibrant hero-badge">
+            <svg class="badge-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+            <span>Sekolah Adiwiyata Tingkat Provinsi</span>
           </div>
-          <div class="card-body">
-            <h3 class="card-title">Analisis Lingkungan Terintegrasi</h3>
-            <p class="hero-card-subtitle">
-              Mengevaluasi pemilahan sampah, pemeliharaan zona hijau, serta tingkat kebersihan area sekolah berbasis kriteria terukur secara otomatis.
-            </p>
-            <div class="alert alert-info" style="margin-top: var(--space-sm); margin-bottom: 0;">
-              <span>💡 Mengubah laporan harian santri menjadi rekomendasi aksi nyata bagi pengelola lingkungan sekolah.</span>
+          <h1 id="hero-heading" class="hero-title">
+            Transformasi Data Piket Lingkungan Menjadi Keputusan Presisi
+          </h1>
+          <p class="hero-description">
+            <strong>PLH-Intelligence</strong> adalah platform <em>Decision Support System (DSS)</em> terpadu di <strong>SMART Ekselensia Indonesia</strong>. Platform ini mengolah laporan rutin piket Pelajaran Lingkungan Hidup (PLH) menjadi rekomendasi strategis untuk mempertahankan budaya ekologis sekolah.
+          </p>
+          <div class="hero-cta-group">
+            <a href="./login.html" class="btn btn-accent btn-lg">
+              Akses Dashboard DSS
+            </a>
+            <a href="#dss-features" class="btn btn-outline btn-lg">
+              Pelajari Cara Kerja
+            </a>
+          </div>
+        </div>
+
+        <!-- Hero Card Overview (Tanpa Angka/Persentase Palsu) -->
+        <div class="hero-visual">
+          <div class="card hero-card">
+            <div class="card-header flex-between">
+              <span class="badge badge-primary">Sistem Pendukung Keputusan</span>
+              <span class="badge badge-accent">Piket PLH</span>
+            </div>
+            <div class="card-body">
+              <h2 class="card-title" style="font-size: var(--text-xl); margin-bottom: var(--space-xs);">Analisis Lingkungan Terintegrasi</h2>
+              <p class="hero-card-subtitle">
+                Mengevaluasi pemilahan sampah, pemeliharaan zona hijau, serta tingkat kebersihan area sekolah berbasis kriteria terukur secara otomatis.
+              </p>
+              <div class="alert alert-info" style="margin-top: var(--space-sm); margin-bottom: 0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="alert-icon" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <span>Mengubah laporan harian santri menjadi rekomendasi aksi nyata bagi pengelola lingkungan sekolah.</span>
+              </div>
+            </div>
+            <div class="card-footer hero-card-footer">
+              <span class="text-xs text-muted">Aplikasi Resmi <strong>SMART Ekselensia Indonesia</strong></span>
             </div>
           </div>
-          <div class="card-footer hero-card-footer">
-            <span class="text-xs text-muted">Aplikasi Resmi <strong>SMART Ekselensia Indonesia</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+       ADIWIYATA SHOWCASE BANNER
+       ========================================================================== -->
+    <section id="adiwiyata" class="adiwiyata-section section bg-light" aria-labelledby="adiwiyata-heading">
+      <div class="container">
+        <div class="adiwiyata-wrapper">
+          <div class="adiwiyata-text-center text-center">
+            <span class="badge badge-accent">Komitmen Lingkungan</span>
+            <h2 id="adiwiyata-heading" class="section-title">SMART Ekselensia Indonesia</h2>
+            <p class="section-subtitle">
+              Sebagai Sekolah Adiwiyata Tingkat Provinsi, kami tidak hanya mengajar teori kebersihan, tetapi menerapkan budaya pemeliharaan lingkungan hidup secara terukur, terdigitalisasi, dan berkelanjutan.
+            </p>
+          </div>
+
+          <div class="grid grid-3 adiwiyata-pillars">
+            <div class="pillar-card">
+              <div class="pillar-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+              </div>
+              <h3>Piket PLH Terstruktur</h3>
+              <p>Pencatatan dan pembagian tugas kebersihan area sekolah secara periodik dan bertanggung jawab.</p>
+            </div>
+            <div class="pillar-card">
+              <div class="pillar-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+              </div>
+              <h3>Analisis Kinerja DSS</h3>
+              <p>Data harian diolah menggunakan algoritma pendukung keputusan untuk menemukan area yang membutuhkan intervensi.</p>
+            </div>
+            <div class="pillar-card">
+              <div class="pillar-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+              </div>
+              <h3>Budaya Sustainable</h3>
+              <p>Membentuk karakter santri peduli lingkungan hidup sesuai kriteria standar Adiwiyata.</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ==========================================================================
-     ADIWIYATA SHOWCASE BANNER
-     ========================================================================== -->
-  <section id="adiwiyata" class="adiwiyata-section section bg-light">
-    <div class="container">
-      <div class="adiwiyata-wrapper">
-        <div class="adiwiyata-text-center text-center">
-          <span class="badge badge-accent">Komitmen Lingkungan</span>
-          <h2 class="section-title">SMART Ekselensia Indonesia</h2>
-          <p class="section-subtitle">
-            Sebagai Sekolah Adiwiyata Tingkat Provinsi, kami tidak hanya mengajar teori kebersihan, tetapi menerapkan budaya pemeliharaan lingkungan hidup secara terukur, terdigitalisasi, dan berkelanjutan.
-          </p>
+    <!-- ==========================================================================
+       DSS FEATURES SECTION
+       ========================================================================== -->
+    <section id="dss-features" class="section" aria-labelledby="dss-heading">
+      <div class="container">
+        <div class="text-center section-header">
+          <span class="badge badge-primary">Solusi Digital</span>
+          <h2 id="dss-heading">Fitur Utama PLH-Intelligence</h2>
+          <p>Bagaimana Sistem Pendukung Keputusan Kami Membantu Pengelolaan Lingkungan Sekolah</p>
         </div>
 
-        <div class="grid grid-3 adiwiyata-pillars">
-          <div class="pillar-card">
-            <div class="pillar-icon">🧹</div>
-            <h3>Piket PLH Terstruktur</h3>
-            <p>Pencatatan dan pembagian tugas kebersihan area sekolah secara periodik dan bertanggung jawab.</p>
-          </div>
-          <div class="pillar-card">
-            <div class="pillar-icon">📊</div>
-            <h3>Analisis Kinerja DSS</h3>
-            <p>Data harian diolah menggunakan algoritma pendukung keputusan untuk menemukan area yang membutuhkan intervensi.</p>
-          </div>
-          <div class="pillar-card">
-            <div class="pillar-icon">🏆</div>
-            <h3>Budaya Sustainable</h3>
-            <p>Membentuk karakter santri peduli lingkungan hidup sesuai kriteria standar Adiwiyata.</p>
+        <div class="grid grid-3">
+          <!-- Feature Card 1 -->
+          <article class="card card-interactive">
+            <div class="card-header">
+              <div class="feature-icon-wrapper" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+              </div>
+              <h3 class="card-title">Pencatatan Piket Real-time</h3>
+            </div>
+            <div class="card-body">
+              Formulir digital intuitif bagi santri dan pengawas untuk menginput kondisi kebersihan zona, pemilahan sampah, dan perawatan tanaman secara berkala.
+            </div>
+          </article>
+
+          <!-- Feature Card 2 -->
+          <article class="card card-interactive">
+            <div class="card-header">
+              <div class="feature-icon-wrapper" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+              </div>
+              <h3 class="card-title">Sistem Bobot & Analisis DSS</h3>
+            </div>
+            <div class="card-body">
+              Algorithmic Decision Support yang menghitung skor kebersihan, memberikan pemeringkatan zona, dan mendeteksi penurunan kualitas kebersihan area.
+            </div>
+          </article>
+
+          <!-- Feature Card 3 -->
+          <article class="card card-interactive">
+            <div class="card-header">
+              <div class="feature-icon-wrapper" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 3 9 9 3 9-12-9 3-3-9-9 9Z"/><path d="M11.6 11.6 15 15"/></svg>
+              </div>
+              <h3 class="card-title">Rekomendasi Tindakan</h3>
+            </div>
+            <div class="card-body">
+              Sistem secara otomatis menerbitkan arahan tindak lanjut bagi tim lingkungan hidup untuk intervensi atau perbaikan fasilitas di area terdampak.
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+       CALL TO ACTION (CTA) BANNER
+       ========================================================================== -->
+    <section class="cta-section section" aria-labelledby="cta-heading">
+      <div class="container">
+        <div class="cta-card">
+          <h2 id="cta-heading">Siap Berkontribusi Mengelola Lingkungan Sekolah?</h2>
+          <p>Masuk dengan akun santri atau pengawas Anda untuk menginput data piket harian dan melihat hasil analisis DSS.</p>
+          <div class="cta-actions">
+            <a href="./login.html" class="btn btn-accent btn-lg">Masuk ke PLH-Intelligence</a>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- ==========================================================================
-     DSS FEATURES SECTION
-     ========================================================================== -->
-  <section id="dss-features" class="section">
-    <div class="container">
-      <div class="text-center section-header">
-        <span class="badge badge-primary">Solusi Digital</span>
-        <h2>Fitur Utama PLH-Intelligence</h2>
-        <p>Bagaimana Sistem Pendukung Keputusan Kami Membantu Pengelolaan Lingkungan Sekolah</p>
-      </div>
-
-      <div class="grid grid-3">
-        <!-- Feature Card 1 -->
-        <article class="card card-interactive">
-          <div class="card-header">
-            <div class="feature-icon-wrapper">📋</div>
-            <h3 class="card-title">Pencatatan Piket Real-time</h3>
-          </div>
-          <div class="card-body">
-            Formulir digital intuitif bagi santri dan pengawas untuk menginput kondisi kebersihan zona, pemilahan sampah, dan perawatan tanaman secara berkala.
-          </div>
-        </article>
-
-        <!-- Feature Card 2 -->
-        <article class="card card-interactive">
-          <div class="card-header">
-            <div class="feature-icon-wrapper">🤖</div>
-            <h3 class="card-title">Sistem Bobot & Analisis DSS</h3>
-          </div>
-          <div class="card-body">
-            Algorithmic Decision Support yang menghitung skor kebersihan, memberikan pemeringkatan zona, dan mendeteksi penurunan kualitas kebersihan area.
-          </div>
-        </article>
-
-        <!-- Feature Card 3 -->
-        <article class="card card-interactive">
-          <div class="card-header">
-            <div class="feature-icon-wrapper">📈</div>
-            <h3 class="card-title">Rekomendasi Tindakan</h3>
-          </div>
-          <div class="card-body">
-            Sistem secara otomatis menerbitkan arahan tindak lanjut bagi tim lingkungan hidup untuk intervensi atau perbaikan fasilitas di area terdampak.
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==========================================================================
-     CALL TO ACTION (CTA) BANNER
-     ========================================================================== -->
-  <section class="cta-section section">
-    <div class="container">
-      <div class="cta-card">
-        <h2>Siap Berkontribusi Mengelola Lingkungan Sekolah?</h2>
-        <p>Masuk dengan akun santri atau pengawas Anda untuk menginput data piket harian dan melihat hasil analisis DSS.</p>
-        <div class="cta-actions">
-          <a href="./login.html" class="btn btn-accent btn-lg">Masuk ke PLH-Intelligence</a>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
+  </main>
 
   <!-- ==========================================================================
      FOOTER

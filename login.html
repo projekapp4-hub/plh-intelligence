@@ -50,16 +50,16 @@
     <div class="login-wrapper">
       <div class="login-card-container">
         
-        <!-- Header Kartu Login -->
-        <div class="login-card-header text-center">
-          <div class="badge badge-accent login-badge">
-            🌿 PORTAL ADIWIYATA
+          <!-- Header Kartu Login -->
+          <div class="login-card-header text-center">
+            <div class="badge badge-accent login-badge">
+              🌿 PORTAL ADIWIYATA
+            </div>
+            <h1 class="login-title">Selamat Datang</h1>
+            <p class="login-subtitle">
+              Masuk ke sistem <strong>PLH–Intelligence</strong> untuk mengelola dan memantau piket lingkungan sekolah.
+            </p>
           </div>
-          <h1 class="login-title">Selamat Datang</h1>
-          <p class="login-subtitle">
-            Masuk ke sistem <strong>PLH–Intelligence</strong> untuk mengelola dan memantau piket lingkungan sekolah.
-          </p>
-        </div>
 
         <!-- Wadah Pesan Umpan Balik (Diselaraskan ID menjadi alertContainer) -->
         <div id="alertContainer" class="alert-container" aria-live="polite"></div>
@@ -92,17 +92,24 @@
               <label for="passwordInput" class="form-label">Kata Sandi</label>
             </div>
             <div class="input-password-wrapper">
-              <input 
-                type="password" 
-                id="passwordInput" 
-                name="password" 
-                class="form-control" 
-                placeholder="Masukkan kata sandi..." 
-                required 
+              <input
+                type="password"
+                id="passwordInput"
+                name="password"
+                class="form-control"
+                placeholder="Masukkan kata sandi..."
+                required
                 autocomplete="current-password"
               >
               <button type="button" id="togglePasswordBtn" class="password-toggle-btn" aria-label="Tampilkan Kata Sandi">
-                👁️
+                <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-closed" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
               </button>
             </div>
             <span class="field-error-msg" id="passwordError"></span>
@@ -119,9 +126,15 @@
         <div class="login-card-footer text-center">
           <p class="institution-tag">
             SMART Ekselensia Indonesia<br>
-            <span class="text-xs text-muted">Sekolah Adiwiyata Tingkat Provinsi</span><br>
-            <span class="text-xs text-muted">User = admin <br>password = admin</span>
+            <span class="institution-subtext">Sekolah Adiwiyata Tingkat Provinsi</span>
           </p>
+          <div class="dev-demo-callout">
+            <span class="callout-icon">💡</span>
+            <div class="callout-content">
+              <strong>Kredensial Demo Pengujian:</strong>
+              <code>Username: <span>admin</span></code> | <code>Password: <span>admin</span></code>
+            </div>
+          </div>
         </div>
 
       </div>

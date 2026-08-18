@@ -76,9 +76,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 3. Penanganan Fitur Toggle Visibilitas Kata Sandi (Tampilkan / Sembunyikan Password)
   if (togglePasswordBtn && passwordInput) {
+    const eyeOpen = togglePasswordBtn.querySelector('.eye-open');
+    const eyeClosed = togglePasswordBtn.querySelector('.eye-closed');
+
     togglePasswordBtn.addEventListener('click', () => {
       const isPasswordType = passwordInput.getAttribute('type') === 'password';
       passwordInput.setAttribute('type', isPasswordType ? 'text' : 'password');
+      togglePasswordBtn.setAttribute('aria-label', isPasswordType ? 'Sembunyikan Kata Sandi' : 'Tampilkan Kata Sandi');
+
+      if (eyeOpen && eyeClosed) {
+        eyeOpen.style.display = isPasswordType ? 'none' : 'block';
+        eyeClosed.style.display = isPasswordType ? 'block' : 'none';
+      }
     });
   }
 
