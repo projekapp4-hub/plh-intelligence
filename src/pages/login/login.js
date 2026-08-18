@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn.disabled = isLoading;
 
     if (isLoading) {
-      if (btnSpinner) btnSpinner.style.display = 'inline-block';
+      if (btnSpinner) btnSpinner.style.display = 'inline-flex';
       if (btnText) btnText.textContent = 'Memverifikasi Hak Akses...';
     } else {
       if (btnSpinner) btnSpinner.style.display = 'none';

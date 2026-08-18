@@ -140,7 +140,26 @@ body.dashboard-body {
 }
 
 .nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.1rem;
+}
+
+.nav-icon svg {
+  display: block;
+}
+
+/* Focus Visible State untuk Keyboard Accessibility */
+.spa-nav-btn:focus-visible,
+.btn-analisis:focus-visible,
+.action-btn:focus-visible,
+.topbar-toggle-btn:focus-visible,
+.sidebar-close-btn:focus-visible,
+.logout-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #1b4332);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(27, 67, 50, 0.15);
 }
 
 /* Sidebar Footer User Info */

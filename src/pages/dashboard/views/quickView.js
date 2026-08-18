@@ -220,7 +220,9 @@ export async function render(container) {
         <!-- Card 1: Total Piket Terlaksana -->
         <div class="metric-card">
           <div class="metric-header">
-            <span class="metric-icon">🧹</span>
+            <span class="metric-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </span>
             <span class="metric-title">Total Piket Terlaksana</span>
           </div>
           <div class="metric-body">
@@ -234,7 +236,9 @@ export async function render(container) {
         <!-- Card 2: Persentase Kepatuhan Piket -->
         <div class="metric-card">
           <div class="metric-header">
-            <span class="metric-icon">🎯</span>
+            <span class="metric-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </span>
             <span class="metric-title">Kepatuhan Jadwal</span>
           </div>
           <div class="metric-body">
@@ -249,7 +253,9 @@ export async function render(container) {
         <!-- Card 3: Status Kondisi Sekolah -->
         <div class="metric-card">
           <div class="metric-header">
-            <span class="metric-icon">🏫</span>
+            <span class="metric-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 9h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+            </span>
             <span class="metric-title">Status Kondisi Sekolah</span>
           </div>
           <div class="metric-body">
@@ -303,7 +309,9 @@ export async function render(container) {
         <div class="ai-insight-card">
           <div class="ai-card-header">
             <div class="ai-badge">
-              <span class="ai-icon">🤖</span>
+              <span class="ai-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><rect x="4" y="8" width="16" height="12" rx="2"/><line x1="9" y1="13" x2="9.01" y2="13"/><line x1="15" y1="13" x2="15.01" y2="13"/></svg>
+              </span>
               <span class="ai-badge-text">Brief AI Insight</span>
             </div>
             <span class="ai-timestamp" id="aiBriefTimestamp">
@@ -319,11 +327,13 @@ export async function render(container) {
                 <p>Klik tombol <strong>Analisis</strong> di bawah untuk memicu AI menganalisis data kebersihan dan kepatuhan piket terbaru dari database.</p>
               `}
             </div>
-            
+
             <!-- Tombol Analisis untuk Reset / Trigger Ulang AI Brief -->
             <div class="ai-action-wrapper">
               <button id="reanalyzeAiBtn" class="btn-analisis">
-                <span class="analisis-icon">⚡</span>
+                <span class="analisis-icon" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </span>
                 <span class="analisis-btn-text">Analisis</span>
               </button>
             </div>
@@ -334,9 +344,12 @@ export async function render(container) {
         <div class="quick-action-card">
           <h3 class="action-title">Aksi Cepat</h3>
           <p class="action-subtitle">Langsung catat hasil observasi atau evaluasi kebersihan terbaru.</p>
-          
+
           <button id="quickInputBtn" class="btn btn-primary action-btn">
-            <span>📝 Input Data Piket Sekarang</span>
+            <span class="action-btn-content">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Input Data Piket Sekarang</span>
+            </span>
             <span class="btn-arrow">→</span>
           </button>
         </div>
@@ -396,13 +409,16 @@ export async function render(container) {
       }
 
       .metric-icon {
-        font-size: 1.25rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-primary, #1b4332);
       }
 
       .metric-title {
         font-size: 0.85rem;
         font-weight: 600;
-        color: #64748b;
+        color: #475569;
       }
 
       .metric-value {
@@ -411,11 +427,12 @@ export async function render(container) {
         color: var(--color-primary, #1b4332);
         line-height: 1.1;
         margin-bottom: 0.5rem;
+        font-variant-numeric: tabular-nums;
       }
 
       .metric-subtitle {
         font-size: 0.75rem;
-        color: #94a3b8;
+        color: #475569;
       }
 
       .metric-trend {
@@ -516,7 +533,7 @@ export async function render(container) {
       .chart-subtitle {
         margin: 0.2rem 0 0 0;
         font-size: 0.75rem;
-        color: #64748b;
+        color: #475569;
       }
 
       .chart-tag {
@@ -592,7 +609,7 @@ export async function render(container) {
 
       .ai-timestamp {
         font-size: 0.7rem;
-        color: #64748b;
+        color: #475569;
       }
 
       .ai-card-body .ai-text {
@@ -659,7 +676,13 @@ export async function render(container) {
       .action-subtitle {
         margin: 0.25rem 0 1rem 0;
         font-size: 0.75rem;
-        color: #64748b;
+        color: #475569;
+      }
+
+      .action-btn-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
       }
 
       .action-btn {
