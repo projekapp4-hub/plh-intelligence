@@ -1,9 +1,9 @@
 /**
  * data.js - Modul Tabel Data Laporan & Detail View (Page 3)
  * Path: src/pages/dashboard/views/data.js
- * 
- * Menyediakan tabel data laporan interaktif, pencarian real-time, 
- * filter status compliance, ekspor data (Excel & PDF Massal/Single), 
+ *
+ * Menyediakan tabel data laporan interaktif, pencarian real-time,
+ * filter status compliance, ekspor data (Excel & PDF Massal/Single),
  * serta modal detail terperinci (Full Data View).
  * Terintegrasi secara asynchronous dengan Native IndexedDB via storage.js (Store: dss_records).
  */
@@ -29,6 +29,27 @@ const MASTER_CHECKLIST_ITEMS = [
   { code: '5.2', category: 'Penghematan Air', label: 'Menyiram tanaman di green house menggunakan air tadah hujan di toren samping asrama.' }
 ];
 
+// Helper Generator Ikon SVG Bebas Emoji (Standard UI/UX Pro Max)
+const Icons = {
+  database: (size = 18) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`,
+  search: (size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  filter: (size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`,
+  fileSpreadsheet: (size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M14 13h2"/><path d="M8 17h2"/><path d="M14 17h2"/></svg>`,
+  filePdf: (size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M10 12v6"/><path d="M10 15h3a1.5 1.5 0 0 0 0-3h-3"/></svg>`,
+  printer: (size = 15) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`,
+  eye: (size = 15) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  trash: (size = 15) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
+  image: (size = 14) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+  check: (size = 14) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  cross: (size = 14) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  close: (size = 18) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  user: (size = 13) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  calendar: (size = 13) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  checkCircle: (size = 14) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+  refresh: (size = 14) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`,
+  documentText: (size = 14) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`
+};
+
 // Variable State Modul DataView
 let activeReportsData = [];
 let filteredReportsData = [];
@@ -39,7 +60,7 @@ let filteredReportsData = [];
 function calculateReportScore(report) {
   let trueCount = 0;
   const tasks = report.tasksStatus || {};
-  
+
   Object.keys(tasks).forEach(key => {
     const val = tasks[key];
     const strVal = String(val).trim().toLowerCase();
@@ -116,7 +137,7 @@ function normalizeReportData(rawReport) {
     petugas = rawReport.tim_petugas.split(',').map(s => s.trim()).filter(Boolean);
   }
 
-  // 5. Normalisasi Task Status (13 Poin Checklist) - Mendukung `checklist`, `tasksStatus`, dll.
+  // 5. Normalisasi Task Status (13 Poin Checklist)
   const rawTasks = rawReport.tasksStatus || rawReport.tasks || rawReport.checklist || rawReport.checklistData || {};
   const tasksStatus = {};
 
@@ -131,7 +152,6 @@ function normalizeReportData(rawReport) {
   Object.entries(keyMapping).forEach(([codeKey, taskKey]) => {
     const val = rawTasks[taskKey] !== undefined ? rawTasks[taskKey] : rawTasks[codeKey];
     const strVal = String(val).trim().toLowerCase();
-    // Evaluasi toleran terhadap boolean, "TRUE", "true", 1, "1"
     tasksStatus[taskKey] = (val === true || strVal === 'true' || val === 1 || strVal === '1');
   });
 
@@ -206,11 +226,13 @@ export async function render(container) {
 
   container.innerHTML = `
     <div class="data-page-wrapper">
-      
+
       <!-- PAGE HEADER CARD -->
       <header class="data-header-card">
         <div class="header-title-group">
-          <div class="header-icon">📊</div>
+          <div class="header-icon-wrapper">
+            ${Icons.database(24)}
+          </div>
           <div>
             <h1 class="page-title">Pusat Data Laporan Kebersihan & Preservasi</h1>
             <p class="page-subtitle">Pemantauan, kontrol kualitas, filter kepatuhan, dan arsip data laporan harian Adiwiyata.</p>
@@ -218,42 +240,52 @@ export async function render(container) {
         </div>
         <div class="header-stat-badges">
           <div class="stat-pill">
-            <span class="stat-label">Total Laporan:</span>
+            <span class="stat-indicator-dot"></span>
+            <span class="stat-label">Total Arsip:</span>
             <strong id="statTotalCount" class="stat-value">0</strong>
+            <span class="stat-unit">Laporan</span>
           </div>
         </div>
       </header>
 
       <!-- BILAH ALAT PEMROSESAN DATA -->
-      <section class="toolbar-card">
+      <section class="toolbar-card" aria-label="Toolbar Pengolahan Data">
         <div class="toolbar-grid">
-          
+
           <div class="toolbar-item search-box-wrapper">
-            <label for="searchInput" class="toolbar-label">🔍 Cari Laporan</label>
+            <label for="searchInput" class="toolbar-label">Pencarian Laporan</label>
             <div class="input-with-icon">
-              <span class="search-icon">🔍</span>
-              <input type="text" id="searchInput" class="toolbar-input" placeholder="Cari Guru Piket, Petugas, ID Laporan...">
+              <span class="input-icon-slot" aria-hidden="true">${Icons.search(16)}</span>
+              <input type="text" id="searchInput" class="toolbar-input" placeholder="Cari Guru Piket, Nama Petugas, atau ID..." autocomplete="off">
+              <button type="button" id="btnClearSearch" class="btn-clear-input" aria-label="Bersihkan pencarian" style="display: none;">
+                ${Icons.close(14)}
+              </button>
             </div>
           </div>
 
           <div class="toolbar-item filter-box-wrapper">
-            <label for="complianceFilter" class="toolbar-label">🎯 Filter Status Compliance</label>
-            <select id="complianceFilter" class="toolbar-select">
-              <option value="ALL">Semua Status Kepatuhan</option>
-              <option value="SANGAT_BAIK">Sangat Baik (≥ 90%)</option>
-              <option value="BAIK">Baik (75% - 89%)</option>
-              <option value="PERLU_EVALUASI">Perlu Evaluasi (< 75%)</option>
-            </select>
+            <label for="complianceFilter" class="toolbar-label">Status Kepatuhan (Compliance)</label>
+            <div class="select-with-icon">
+              <span class="select-icon-slot" aria-hidden="true">${Icons.filter(15)}</span>
+              <select id="complianceFilter" class="toolbar-select">
+                <option value="ALL">Semua Tingkat Kepatuhan</option>
+                <option value="SANGAT_BAIK">Sangat Baik (≥ 90%)</option>
+                <option value="BAIK">Baik (75% - 89%)</option>
+                <option value="PERLU_EVALUASI">Perlu Evaluasi (&lt; 75%)</option>
+              </select>
+            </div>
           </div>
 
           <div class="toolbar-item export-buttons-wrapper">
-            <label class="toolbar-label">📥 Ekspor Data Massal</label>
+            <label class="toolbar-label">Ekspor Data Massal</label>
             <div class="export-btn-group">
-              <button type="button" id="btnExportExcel" class="btn-export btn-excel">
-                📊 Export Excel
+              <button type="button" id="btnExportExcel" class="btn-export btn-excel" title="Ekspor seluruh data tersaring ke Excel (.xlsx)">
+                ${Icons.fileSpreadsheet(16)}
+                <span>Excel</span>
               </button>
-              <button type="button" id="btnExportPDF" class="btn-export btn-pdf">
-                📄 Export PDF
+              <button type="button" id="btnExportPDF" class="btn-export btn-pdf" title="Ekspor seluruh data tersaring ke PDF Dokumen Cetak">
+                ${Icons.filePdf(16)}
+                <span>PDF Rekap</span>
               </button>
             </div>
           </div>
@@ -262,19 +294,25 @@ export async function render(container) {
       </section>
 
       <!-- TABEL UTAMA DATA LAPORAN -->
-      <section class="table-card">
+      <section class="table-card" aria-label="Tabel Data Laporan">
+        <div class="table-meta-bar">
+          <div class="table-meta-info" id="tableMetaInfo">
+            Menampilkan data laporan Adiwiyata aktif
+          </div>
+        </div>
+
         <div class="table-responsive-wrapper">
           <table class="data-table">
             <thead>
               <tr>
-                <th>ID Laporan</th>
-                <th>Tanggal & Guru Piket</th>
-                <th>Tim Petugas</th>
-                <th class="text-center">Capaian Poin</th>
-                <th>Skor Compliance</th>
-                <th class="text-center">Media</th>
-                <th>Catatan Evaluasi</th>
-                <th class="text-center">Aksi</th>
+                <th scope="col" style="width: 140px;">ID Laporan</th>
+                <th scope="col" style="min-width: 170px;">Tanggal & Guru</th>
+                <th scope="col" style="min-width: 180px;">Tim Petugas</th>
+                <th scope="col" class="text-center" style="width: 120px;">Capaian</th>
+                <th scope="col" style="width: 150px;">Status Kepatuhan</th>
+                <th scope="col" class="text-center" style="width: 110px;">Media</th>
+                <th scope="col" style="min-width: 180px;">Catatan Lapangan</th>
+                <th scope="col" class="text-center" style="width: 130px;">Aksi</th>
               </tr>
             </thead>
             <tbody id="reportsTableBody"></tbody>
@@ -282,30 +320,44 @@ export async function render(container) {
         </div>
 
         <div id="emptyStateBox" class="empty-state-box" style="display: none;">
-          <div class="empty-icon">📂</div>
+          <div class="empty-icon-wrapper">
+            ${Icons.search(36)}
+          </div>
           <h3 class="empty-title">Data Laporan Tidak Ditemukan</h3>
-          <p class="empty-desc">Tidak ada laporan yang cocok dengan kata kunci pencarian atau filter status yang Anda pilih.</p>
+          <p class="empty-desc">Tidak ada arsip yang cocok dengan kata kunci atau filter status yang dipilih.</p>
+          <button type="button" id="btnResetFilterEmpty" class="btn btn-secondary btn-sm" style="margin-top: 0.75rem;">
+            ${Icons.refresh(14)}
+            <span>Reset Pencarian & Filter</span>
+          </button>
         </div>
       </section>
 
       <!-- MODAL POP-UP DETAIL LAPORAN TERPERINCI -->
-      <div id="fullDetailModal" class="modal-overlay" aria-hidden="true">
+      <div id="fullDetailModal" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalDetailTitle">
         <div class="modal-card modal-large">
-          
+
           <div class="modal-header">
             <div class="modal-header-title">
-              <h2 class="modal-title">Detail Full Laporan Kebersihan & Preservasi</h2>
-              <span id="modalReportIdBadge" class="modal-id-badge">#LAP-00000000-00</span>
+              <div class="modal-icon-badge">
+                ${Icons.documentText(18)}
+              </div>
+              <div>
+                <h2 id="modalDetailTitle" class="modal-title">Detail Lengkap Laporan Kebersihan & Preservasi</h2>
+                <span id="modalReportIdBadge" class="modal-id-badge">#LAP-00000000-00</span>
+              </div>
             </div>
-            <button type="button" id="btnCloseDetailModal" class="modal-close-btn" title="Tutup Modal">✕</button>
+            <button type="button" id="btnCloseDetailModal" class="modal-close-btn" aria-label="Tutup jendela detail">
+              ${Icons.close(18)}
+            </button>
           </div>
 
           <div class="modal-body modal-scrollable" id="modalFullDetailBody"></div>
 
           <div class="modal-footer">
-            <button type="button" id="btnCloseModalFooter" class="btn btn-secondary">Tutup Modal</button>
+            <button type="button" id="btnCloseModalFooter" class="btn btn-secondary">Tutup</button>
             <button type="button" id="btnPrintModalPDF" class="btn btn-primary">
-              🖨️ Cetak Dokumen PDF
+              ${Icons.printer(16)}
+              <span>Cetak PDF Laporan</span>
             </button>
           </div>
 
@@ -313,10 +365,12 @@ export async function render(container) {
       </div>
 
       <!-- MODAL LIGHTBOX PHOTO -->
-      <div id="photoLightboxModal" class="modal-overlay lightbox-overlay" aria-hidden="true">
+      <div id="photoLightboxModal" class="modal-overlay lightbox-overlay" aria-hidden="true" role="dialog" aria-modal="true">
         <div class="lightbox-content">
-          <button type="button" id="btnCloseLightbox" class="lightbox-close-btn">✕</button>
-          <img id="lightboxImage" src="" alt="Foto Pembesaran Dokumentasi Lapangan">
+          <button type="button" id="btnCloseLightbox" class="lightbox-close-btn" aria-label="Tutup foto perbesaran">
+            ${Icons.close(22)}
+          </button>
+          <img id="lightboxImage" src="" alt="Dokumentasi Visual Kegiatan Lingkungan Hidup">
         </div>
       </div>
 
@@ -332,15 +386,16 @@ export async function render(container) {
       }
 
       .data-header-card, .toolbar-card, .table-card {
-        background-color: #ffffff;
+        background-color: var(--color-surface, #ffffff);
         border: 1px solid var(--color-border, #e2e8f0);
         border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
       }
 
+      /* HEADER CARD */
       .data-header-card {
-        padding: 1.25rem;
-        border-top: 4px solid var(--color-primary, #1b4332);
+        padding: 1.25rem 1.5rem;
+        border-left: 4px solid var(--color-primary, #2C5E3B);
         display: flex;
         flex-direction: column;
         gap: 1rem;
@@ -354,24 +409,74 @@ export async function render(container) {
         }
       }
 
-      .header-title-group { display: flex; align-items: center; gap: 1rem; }
-      .header-icon { font-size: 2.2rem; }
-      .page-title { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--color-primary, #1b4332); }
-      .page-subtitle { margin: 0.2rem 0 0 0; font-size: 0.8rem; color: #64748b; }
+      .header-title-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .header-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background-color: #f0fdf4;
+        color: var(--color-primary, #2C5E3B);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #bbf7d0;
+        flex-shrink: 0;
+      }
+
+      .page-title {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1e293b;
+        letter-spacing: -0.01em;
+      }
+
+      .page-subtitle {
+        margin: 0.2rem 0 0 0;
+        font-size: 0.82rem;
+        color: #64748b;
+        line-height: 1.4;
+      }
 
       .stat-pill {
-        background-color: #f1f5f9;
-        padding: 0.5rem 0.85rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 0.45rem 0.85rem;
         border-radius: 20px;
-        font-size: 0.85rem;
-        color: #334155;
+        font-size: 0.82rem;
+        color: #475569;
         display: inline-flex;
         gap: 0.4rem;
         align-items: center;
       }
-      .stat-value { color: var(--color-primary, #1b4332); font-weight: 800; }
 
-      .toolbar-card { padding: 1.25rem; }
+      .stat-indicator-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #10b981;
+      }
+
+      .stat-value {
+        color: #1e293b;
+        font-weight: 700;
+        font-family: var(--font-primary, inherit);
+      }
+
+      .stat-unit {
+        color: #64748b;
+      }
+
+      /* TOOLBAR */
+      .toolbar-card {
+        padding: 1.25rem 1.5rem;
+      }
+
       .toolbar-grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -380,78 +485,156 @@ export async function render(container) {
 
       @media (min-width: 768px) {
         .toolbar-grid {
-          grid-template-columns: 2fr 1.5fr 1.5fr;
+          grid-template-columns: 2fr 1.5fr 1.3fr;
           align-items: flex-end;
         }
       }
 
       .toolbar-label {
         display: block;
-        font-size: 0.75rem;
-        font-weight: 700;
+        font-size: 0.76rem;
+        font-weight: 600;
         color: #475569;
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.4rem;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
       }
 
-      .input-with-icon { position: relative; display: flex; align-items: center; }
-      .search-icon { position: absolute; left: 0.75rem; font-size: 0.85rem; color: #94a3b8; }
+      .input-with-icon, .select-with-icon {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .input-icon-slot, .select-icon-slot {
+        position: absolute;
+        left: 0.85rem;
+        display: flex;
+        align-items: center;
+        color: #64748b;
+        pointer-events: none;
+      }
+
+      .btn-clear-input {
+        position: absolute;
+        right: 0.75rem;
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+      }
+
+      .btn-clear-input:hover {
+        color: #475569;
+        background-color: #f1f5f9;
+      }
 
       .toolbar-input, .toolbar-select {
         width: 100%;
-        padding: 0.6rem 0.75rem;
-        font-size: 0.85rem;
+        padding: 0.65rem 0.85rem 0.65rem 2.4rem;
+        font-size: 0.84rem;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
         outline: none;
         background-color: #ffffff;
+        color: #1e293b;
         font-family: inherit;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
       }
 
-      .toolbar-input { padding-left: 2.2rem; }
       .toolbar-input:focus, .toolbar-select:focus {
-        border-color: var(--color-primary, #1b4332);
-        box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
+        border-color: var(--color-primary, #2C5E3B);
+        box-shadow: 0 0 0 3px rgba(44, 94, 59, 0.12);
       }
 
-      .export-btn-group { display: flex; gap: 0.5rem; }
+      .export-btn-group {
+        display: flex;
+        gap: 0.5rem;
+      }
 
       .btn-export {
         flex: 1;
-        padding: 0.6rem 0.75rem;
-        font-size: 0.8rem;
-        font-weight: 700;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.82rem;
+        font-weight: 600;
         border-radius: 8px;
-        border: none;
+        border: 1px solid transparent;
         cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
+        transition: all 0.15s ease;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.3rem;
+        gap: 0.45rem;
       }
 
-      .btn-excel { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-      .btn-excel:hover { background-color: #bbf7d0; }
+      .btn-excel {
+        background-color: #f0fdf4;
+        color: #166534;
+        border-color: #bbf7d0;
+      }
+      .btn-excel:hover {
+        background-color: #dcfce7;
+        border-color: #86efac;
+        transform: translateY(-1px);
+      }
 
-      .btn-pdf { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-      .btn-pdf:hover { background-color: #fca5a5; }
+      .btn-pdf {
+        background-color: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+      }
+      .btn-pdf:hover {
+        background-color: #fee2e2;
+        border-color: #fca5a5;
+        transform: translateY(-1px);
+      }
 
-      .table-card { overflow: hidden; }
-      .table-responsive-wrapper { width: 100%; overflow-x: auto; }
+      /* TABLE COMPONENT */
+      .table-card {
+        overflow: hidden;
+      }
+
+      .table-meta-bar {
+        padding: 0.75rem 1.25rem;
+        background-color: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .table-meta-info {
+        font-size: 0.78rem;
+        color: #64748b;
+        font-weight: 500;
+      }
+
+      .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+      }
 
       .data-table {
         width: 100%;
         border-collapse: collapse;
         text-align: left;
-        font-size: 0.85rem;
+        font-size: 0.84rem;
       }
 
       .data-table th {
         background-color: #f8fafc;
-        color: #334155;
-        font-weight: 700;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
         padding: 0.85rem 1rem;
-        border-bottom: 2px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
         white-space: nowrap;
       }
 
@@ -462,60 +645,153 @@ export async function render(container) {
         color: #334155;
       }
 
-      .data-table tbody tr:hover { background-color: #f8fafc; }
+      .data-table tbody tr {
+        transition: background-color 0.15s ease;
+      }
+
+      .data-table tbody tr:hover {
+        background-color: #f8fafc;
+      }
+
       .text-center { text-align: center; }
 
-      .id-code {
+      .id-code-badge {
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        font-weight: 700;
-        color: var(--color-primary, #1b4332);
-        font-size: 0.8rem;
-        background-color: #f1f5f9;
-        padding: 0.2rem 0.4rem;
-        border-radius: 4px;
-      }
-
-      .date-text { font-weight: 700; color: #1e293b; display: block; }
-      .guru-text { font-size: 0.75rem; color: #64748b; display: block; margin-top: 0.1rem; }
-
-      .pills-container { display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 220px; }
-
-      .petugas-pill {
-        font-size: 0.7rem;
-        background-color: #e0f2fe;
-        color: #0369a1;
-        padding: 0.15rem 0.45rem;
-        border-radius: 12px;
         font-weight: 600;
-        white-space: nowrap;
-      }
-
-      .task-ratio { font-weight: 700; color: #334155; }
-
-      .status-badge {
-        font-size: 0.7rem;
-        font-weight: 700;
-        padding: 0.25rem 0.55rem;
-        border-radius: 12px;
+        color: var(--color-primary, #2C5E3B);
+        font-size: 0.78rem;
+        background-color: #f0fdf4;
+        border: 1px solid #dcfce7;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
         display: inline-block;
-        white-space: nowrap;
       }
-      .badge-sangat-baik { background-color: #d1fae5; color: #065f46; }
-      .badge-baik { background-color: #dbeafe; color: #1e40af; }
-      .badge-evaluasi { background-color: #fee2e2; color: #991b1b; }
 
-      .media-indicator {
-        font-size: 0.75rem;
+      .date-text {
         font-weight: 600;
-        color: #475569;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .date-text svg {
+        color: #64748b;
+      }
+
+      .guru-text {
+        font-size: 0.76rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-top: 0.2rem;
+      }
+
+      .guru-text svg {
+        color: #94a3b8;
+      }
+
+      .pills-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+
+      .petugas-tag {
+        font-size: 0.72rem;
         background-color: #f1f5f9;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+        padding: 0.15rem 0.5rem;
+        border-radius: 6px;
+        font-weight: 500;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      .petugas-tag svg {
+        color: #64748b;
+      }
+
+      .task-ratio {
+        font-weight: 600;
+        color: #334155;
+        font-size: 0.8rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
         padding: 0.2rem 0.5rem;
         border-radius: 6px;
         display: inline-block;
       }
 
+      /* COMPLIANCE STATUS BADGES */
+      .status-badge {
+        font-size: 0.74rem;
+        font-weight: 600;
+        padding: 0.25rem 0.6rem;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+        border: 1px solid transparent;
+      }
+
+      .status-badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      .badge-sangat-baik {
+        background-color: #ecfdf5;
+        color: #065f46;
+        border-color: #a7f3d0;
+      }
+      .badge-sangat-baik .status-badge-dot {
+        background-color: #10b981;
+      }
+
+      .badge-baik {
+        background-color: #f0fdf4;
+        color: #166534;
+        border-color: #bbf7d0;
+      }
+      .badge-baik .status-badge-dot {
+        background-color: #22c55e;
+      }
+
+      .badge-evaluasi {
+        background-color: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+      }
+      .badge-evaluasi .status-badge-dot {
+        background-color: #ef4444;
+      }
+
+      .media-indicator {
+        font-size: 0.74rem;
+        font-weight: 500;
+        color: #475569;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .media-indicator svg {
+        color: #64748b;
+      }
+
       .ellipsis-text {
-        max-width: 180px;
+        max-width: 220px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -523,7 +799,12 @@ export async function render(container) {
         color: #64748b;
       }
 
-      .action-btn-group { display: flex; gap: 0.35rem; justify-content: center; }
+      /* ACTION BUTTONS */
+      .action-btn-group {
+        display: flex;
+        gap: 0.4rem;
+        justify-content: center;
+      }
 
       .btn-action {
         width: 32px;
@@ -531,59 +812,106 @@ export async function render(container) {
         border-radius: 6px;
         border: 1px solid #cbd5e1;
         background-color: #ffffff;
+        color: #475569;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.85rem;
-        transition: all 0.2s;
+        transition: all 0.15s ease;
       }
 
-      .btn-action-view:hover { background-color: #e0f2fe; border-color: #0284c7; color: #0284c7; }
-      .btn-action-print:hover { background-color: #fef3c7; border-color: #d97706; color: #d97706; }
-      .btn-action-delete:hover { background-color: #fee2e2; border-color: #dc2626; color: #dc2626; }
+      .btn-action-view:hover {
+        background-color: #f0fdf4;
+        border-color: #86efac;
+        color: var(--color-primary, #2C5E3B);
+        transform: translateY(-1px);
+      }
 
-      .empty-state-box { padding: 3rem 1rem; text-align: center; }
-      .empty-icon { font-size: 3rem; margin-bottom: 0.5rem; }
-      .empty-title { font-size: 1.05rem; font-weight: 700; color: #334155; margin: 0; }
-      .empty-desc { font-size: 0.8rem; color: #64748b; margin: 0.3rem 0 0 0; }
+      .btn-action-print:hover {
+        background-color: #eff6ff;
+        border-color: #93c5fd;
+        color: #1d4ed8;
+        transform: translateY(-1px);
+      }
 
-      /* MODAL POP-UP & SCROLLING CONTROLS */
+      .btn-action-delete:hover {
+        background-color: #fef2f2;
+        border-color: #fca5a5;
+        color: #dc2626;
+        transform: translateY(-1px);
+      }
+
+      /* EMPTY STATE */
+      .empty-state-box {
+        padding: 3.5rem 1rem;
+        text-align: center;
+      }
+
+      .empty-icon-wrapper {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background-color: #f1f5f9;
+        color: #94a3b8;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.75rem;
+      }
+
+      .empty-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+      }
+
+      .empty-desc {
+        font-size: 0.82rem;
+        color: #64748b;
+        margin: 0.35rem 0 0 0;
+      }
+
+      /* MODAL DIALOG */
       .modal-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100vw;
         height: 100vh;
         background-color: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(4px);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
         z-index: 200;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 1.5rem;
+        padding: 1.5rem 1rem;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.25s ease, visibility 0.25s ease;
+        transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .modal-overlay.active { opacity: 1; visibility: visible; }
+      .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
 
       .modal-card {
         background-color: #ffffff;
-        border-radius: 12px;
+        border-radius: 14px;
         width: 100%;
-        max-width: 850px;
-        max-height: 85vh;
-        height: auto;
+        max-width: 860px;
+        height: 88vh;
+        max-height: 88vh;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
         overflow: hidden;
+        border: 1px solid #e2e8f0;
       }
 
       .modal-header {
-        padding: 1rem 1.25rem;
+        padding: 1.1rem 1.5rem;
         border-bottom: 1px solid #e2e8f0;
         display: flex;
         justify-content: space-between;
@@ -592,42 +920,94 @@ export async function render(container) {
         flex-shrink: 0;
       }
 
-      .modal-header-title { display: flex; align-items: center; gap: 0.75rem; }
-      .modal-title { margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--color-primary, #1b4332); }
-      
-      .modal-id-badge {
-        font-family: monospace;
-        font-size: 0.8rem;
+      .modal-header-title {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+      }
+
+      .modal-icon-badge {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background-color: #f0fdf4;
+        color: var(--color-primary, #2C5E3B);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #bbf7d0;
+      }
+
+      .modal-title {
+        margin: 0;
+        font-size: 1rem;
         font-weight: 700;
+        color: #1e293b;
+      }
+
+      .modal-id-badge {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.74rem;
+        font-weight: 600;
         background-color: #e2e8f0;
         color: #334155;
-        padding: 0.2rem 0.5rem;
+        padding: 0.15rem 0.45rem;
         border-radius: 4px;
+        display: inline-block;
+        margin-top: 0.2rem;
       }
 
       .modal-close-btn {
-        background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;
+        background: none;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .modal-close-btn:hover {
+        background-color: #e2e8f0;
+        color: #1e293b;
       }
 
       .modal-scrollable {
-        padding: 1.25rem;
-        display: block; 
-        flex: 1 1 auto;
-        min-height: 0; 
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        flex: 1 1 0px;
+        min-height: 0;
         overflow-y: auto;
-        overscroll-behavior: contain; 
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
       }
 
-      .modal-scrollable .detail-section-card {
-        margin-bottom: 1.25rem;
+      /* Custom Smooth Scrollbar for Data-Dense Modal */
+      .modal-scrollable::-webkit-scrollbar {
+        width: 8px;
       }
 
-      .modal-scrollable .detail-section-card:last-child {
-        margin-bottom: 0;
+      .modal-scrollable::-webkit-scrollbar-track {
+        background: #f8fafc;
+        border-radius: 4px;
+      }
+
+      .modal-scrollable::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+
+      .modal-scrollable::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
       }
 
       .modal-footer {
-        padding: 1rem 1.25rem;
+        padding: 1rem 1.5rem;
         border-top: 1px solid #e2e8f0;
         display: flex;
         justify-content: flex-end;
@@ -636,22 +1016,31 @@ export async function render(container) {
         flex-shrink: 0;
       }
 
+      /* DETAIL CARDS */
       .detail-section-card {
         border: 1px solid #e2e8f0;
-        border-radius: 10px;
+        border-radius: 8px;
         overflow: hidden;
+        background-color: #ffffff;
+        flex-shrink: 0;
+        width: 100%;
       }
 
       .section-card-header {
-        background-color: #f1f5f9;
-        padding: 0.65rem 1rem;
-        font-weight: 700;
-        font-size: 0.85rem;
-        color: var(--color-primary, #1b4332);
+        background-color: #f8fafc;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        font-size: 0.82rem;
+        color: #334155;
         border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
       }
 
-      .section-card-body { padding: 1rem; }
+      .section-card-body {
+        padding: 1rem;
+      }
 
       .identity-grid {
         display: grid;
@@ -660,11 +1049,29 @@ export async function render(container) {
       }
 
       @media (min-width: 640px) {
-        .identity-grid { grid-template-columns: repeat(3, 1fr); }
+        .identity-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
       }
 
-      .info-item-label { font-size: 0.75rem; color: #64748b; font-weight: 600; }
-      .info-item-value { font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-top: 0.15rem; }
+      .info-item-label {
+        font-size: 0.74rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        display: block;
+      }
+
+      .info-item-value {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
 
       .uncut-matrix-table {
         width: 100%;
@@ -674,56 +1081,62 @@ export async function render(container) {
 
       .uncut-matrix-table th {
         background-color: #f8fafc;
-        padding: 0.6rem 0.75rem;
+        padding: 0.65rem 0.85rem;
         text-align: left;
-        border-bottom: 2px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
         color: #475569;
+        font-weight: 600;
+        font-size: 0.76rem;
       }
 
       .uncut-matrix-table td {
-        padding: 0.65rem 0.75rem;
+        padding: 0.65rem 0.85rem;
         border-bottom: 1px solid #f1f5f9;
         vertical-align: middle;
       }
 
-      .badge-task-true {
-        background-color: #d1fae5;
-        color: #065f46;
-        font-weight: 700;
-        padding: 0.2rem 0.5rem;
+      .badge-task-status {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.2rem 0.55rem;
         border-radius: 6px;
-        font-size: 0.7rem;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+
+      .badge-task-true {
+        background-color: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
       }
 
       .badge-task-false {
-        background-color: #fee2e2;
+        background-color: #fef2f2;
         color: #991b1b;
-        font-weight: 700;
-        padding: 0.2rem 0.5rem;
-        border-radius: 6px;
-        font-size: 0.7rem;
-        display: inline-block;
+        border: 1px solid #fecaca;
       }
 
       .gallery-photo-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 0.75rem;
       }
 
       .gallery-photo-item {
+        position: relative;
         width: 100%;
-        height: 100px;
+        height: 110px;
         border-radius: 8px;
         overflow: hidden;
         border: 1px solid #e2e8f0;
         cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        background-color: #f1f5f9;
       }
 
       .gallery-photo-item:hover {
-        transform: scale(1.03);
+        transform: translateY(-2px);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       }
 
@@ -733,31 +1146,90 @@ export async function render(container) {
         object-fit: cover;
       }
 
+      .full-narrative-box {
+        background-color: #f8fafc;
+        border-left: 3px solid var(--color-primary, #2C5E3B);
+        padding: 0.85rem 1rem;
+        border-radius: 0 6px 6px 0;
+      }
+
       .full-narrative-text {
-        font-size: 0.85rem;
+        font-size: 0.84rem;
         line-height: 1.6;
         color: #334155;
         white-space: pre-line;
         margin: 0;
       }
 
-      .lightbox-overlay { z-index: 300; background-color: rgba(0, 0, 0, 0.85); }
-      .lightbox-content { position: relative; max-width: 90vw; max-height: 90vh; }
-      .lightbox-content img { max-width: 100%; max-height: 85vh; border-radius: 8px; object-fit: contain; }
+      /* LIGHTBOX */
+      .lightbox-overlay {
+        z-index: 300;
+        background-color: rgba(0, 0, 0, 0.85);
+      }
+
+      .lightbox-content {
+        position: relative;
+        max-width: 90vw;
+        max-height: 90vh;
+      }
+
+      .lightbox-content img {
+        max-width: 100%;
+        max-height: 85vh;
+        border-radius: 8px;
+        object-fit: contain;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+
       .lightbox-close-btn {
-        position: absolute; top: -40px; right: 0;
-        background: none; border: none; color: #ffffff; font-size: 1.8rem; cursor: pointer;
+        position: absolute;
+        top: -40px;
+        right: 0;
+        background: none;
+        border: none;
+        color: #ffffff;
+        cursor: pointer;
+        padding: 4px;
       }
 
       .btn {
-        padding: 0.65rem 1.25rem; font-size: 0.85rem; font-weight: 700;
-        border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s;
-        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.6rem 1.15rem;
+        font-size: 0.84rem;
+        font-weight: 600;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
       }
-      .btn-primary { background-color: var(--color-primary, #1b4332); color: #ffffff; }
-      .btn-primary:hover { background-color: #143225; }
-      .btn-secondary { background-color: #ffffff; border: 1px solid #cbd5e1; color: #334155; }
-      .btn-secondary:hover { background-color: #f1f5f9; }
+
+      .btn-sm {
+        padding: 0.45rem 0.85rem;
+        font-size: 0.78rem;
+      }
+
+      .btn-primary {
+        background-color: var(--color-primary, #2C5E3B);
+        color: #ffffff;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--color-primary-hover, #224a2e);
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background-color: #ffffff;
+        border-color: #cbd5e1;
+        color: #334155;
+      }
+
+      .btn-secondary:hover {
+        background-color: #f1f5f9;
+        border-color: #94a3b8;
+      }
     </style>
   `;
 
@@ -766,16 +1238,19 @@ export async function render(container) {
 
 /**
  * Inisialisasi Event Listener & Logika Integrasi Ekspor Modul
- * @param {HTMLElement} container 
+ * @param {HTMLElement} container
  */
 function initDataPageLogic(container) {
   const searchInput = container.querySelector('#searchInput');
+  const btnClearSearch = container.querySelector('#btnClearSearch');
   const complianceFilter = container.querySelector('#complianceFilter');
   const btnExportExcel = container.querySelector('#btnExportExcel');
   const btnExportPDF = container.querySelector('#btnExportPDF');
   const reportsTableBody = container.querySelector('#reportsTableBody');
   const emptyStateBox = container.querySelector('#emptyStateBox');
   const statTotalCount = container.querySelector('#statTotalCount');
+  const tableMetaInfo = container.querySelector('#tableMetaInfo');
+  const btnResetFilterEmpty = container.querySelector('#btnResetFilterEmpty');
 
   // Modal Elements
   const fullDetailModal = container.querySelector('#fullDetailModal');
@@ -796,13 +1271,13 @@ function initDataPageLogic(container) {
   if (btnExportExcel) {
     btnExportExcel.addEventListener('click', async () => {
       if (!filteredReportsData || filteredReportsData.length === 0) {
-        alert('⚠️ Tidak ada data laporan yang tersedia untuk diekspor.');
+        alert('Tidak ada data laporan yang tersedia untuk diekspor.');
         return;
       }
 
       try {
         btnExportExcel.disabled = true;
-        btnExportExcel.textContent = '⏳ Memproses...';
+        btnExportExcel.innerHTML = `<span>Memproses...</span>`;
 
         const exportRows = prepareExportData(filteredReportsData);
 
@@ -823,10 +1298,10 @@ function initDataPageLogic(container) {
         });
 
       } catch (err) {
-        alert(`❌ Gagal mengekspor Excel: ${err.message}`);
+        alert(`Gagal mengekspor Excel: ${err.message}`);
       } finally {
         btnExportExcel.disabled = false;
-        btnExportExcel.innerHTML = '📊 Export Excel';
+        btnExportExcel.innerHTML = `${Icons.fileSpreadsheet(16)}<span>Excel</span>`;
       }
     });
   }
@@ -837,13 +1312,13 @@ function initDataPageLogic(container) {
   if (btnExportPDF) {
     btnExportPDF.addEventListener('click', async () => {
       if (!filteredReportsData || filteredReportsData.length === 0) {
-        alert('⚠️ Tidak ada data laporan yang tersedia untuk diekspor.');
+        alert('Tidak ada data laporan yang tersedia untuk diekspor.');
         return;
       }
 
       try {
         btnExportPDF.disabled = true;
-        btnExportPDF.textContent = '⏳ Memproses...';
+        btnExportPDF.innerHTML = `<span>Memproses...</span>`;
 
         const exportRows = prepareExportData(filteredReportsData);
 
@@ -866,10 +1341,10 @@ function initDataPageLogic(container) {
         });
 
       } catch (err) {
-        alert(`❌ Gagal mengekspor PDF Massal: ${err.message}`);
+        alert(`Gagal mengekspor PDF Massal: ${err.message}`);
       } finally {
         btnExportPDF.disabled = false;
-        btnExportPDF.innerHTML = '📄 Export PDF';
+        btnExportPDF.innerHTML = `${Icons.filePdf(16)}<span>PDF Rekap</span>`;
       }
     });
   }
@@ -880,7 +1355,7 @@ function initDataPageLogic(container) {
   async function exportSingleReportPDF(reportId) {
     const report = activeReportsData.find(r => r.id === reportId);
     if (!report) {
-      alert('⚠️ Data laporan tidak ditemukan.');
+      alert('Data laporan tidak ditemukan.');
       return;
     }
 
@@ -888,7 +1363,6 @@ function initDataPageLogic(container) {
       const { trueCount, percentage, statusText } = calculateReportScore(report);
       const listPetugas = Array.isArray(report.petugas) ? report.petugas.join(', ') : String(report.petugas || '-');
 
-      // Susun data 13 Poin Task ke dalam format tabel PDF
       const keyMap = {
         '1.1': 'task_1_1', '1.2': 'task_1_2', '1.3': 'task_1_3',
         '2.1': 'task_2_1', '2.2': 'task_2_2', '2.3': 'task_2_3', '2.4': 'task_2_4',
@@ -907,7 +1381,7 @@ function initDataPageLogic(container) {
           code: item.code,
           category: item.category,
           label: item.label,
-          status: isDone ? '✓ DIKERJAKAN' : '✕ TIDAK DIKERJAKAN'
+          status: isDone ? 'DIKERJAKAN' : 'TIDAK DIKERJAKAN'
         };
       });
 
@@ -926,7 +1400,7 @@ function initDataPageLogic(container) {
       });
 
     } catch (err) {
-      alert(`❌ Gagal mencetak PDF Laporan: ${err.message}`);
+      alert(`Gagal mencetak PDF Laporan: ${err.message}`);
     }
   }
 
@@ -950,11 +1424,13 @@ function initDataPageLogic(container) {
       reportsTableBody.innerHTML = '';
       if (emptyStateBox) emptyStateBox.style.display = 'block';
       if (statTotalCount) statTotalCount.textContent = '0';
+      if (tableMetaInfo) tableMetaInfo.textContent = 'Tidak ada data laporan ditemukan';
       return;
     }
 
     if (emptyStateBox) emptyStateBox.style.display = 'none';
     if (statTotalCount) statTotalCount.textContent = filteredReportsData.length;
+    if (tableMetaInfo) tableMetaInfo.textContent = `Menampilkan ${filteredReportsData.length} laporan Adiwiyata`;
 
     reportsTableBody.innerHTML = filteredReportsData.map((report) => {
       const { trueCount, percentage, statusClass, statusText } = calculateReportScore(report);
@@ -962,29 +1438,48 @@ function initDataPageLogic(container) {
 
       return `
         <tr>
-          <td><span class="id-code">${report.id}</span></td>
+          <td>
+            <span class="id-code-badge">${report.id}</span>
+          </td>
 
           <td>
-            <span class="date-text">${report.tanggal}</span>
-            <span class="guru-text">🧑‍🏫 ${report.guruPiket}</span>
+            <div class="date-text">
+              ${Icons.calendar(13)}
+              <span>${report.tanggal}</span>
+            </div>
+            <div class="guru-text">
+              ${Icons.user(12)}
+              <span>${report.guruPiket}</span>
+            </div>
           </td>
 
           <td>
             <div class="pills-container">
-              ${(report.petugas || []).map(p => `<span class="petugas-pill">${p}</span>`).join('')}
+              ${(report.petugas || []).map(p => `
+                <span class="petugas-tag">
+                  ${Icons.user(11)}
+                  <span>${p}</span>
+                </span>
+              `).join('')}
             </div>
           </td>
 
           <td class="text-center">
-            <span class="task-ratio">${trueCount} / 13 Task</span>
+            <span class="task-ratio">${trueCount} / 13</span>
           </td>
 
           <td>
-            <span class="status-badge ${statusClass}">${percentage}% - ${statusText}</span>
+            <span class="status-badge ${statusClass}">
+              <span class="status-badge-dot"></span>
+              <span>${percentage}% · ${statusText}</span>
+            </span>
           </td>
 
           <td class="text-center">
-            <span class="media-indicator">📷 ${photoCount} Foto</span>
+            <span class="media-indicator">
+              ${Icons.image(13)}
+              <span>${photoCount}</span>
+            </span>
           </td>
 
           <td>
@@ -995,14 +1490,14 @@ function initDataPageLogic(container) {
 
           <td class="text-center">
             <div class="action-btn-group">
-              <button type="button" class="btn-action btn-action-view" data-id="${report.id}" title="Lihat Detail Full Data">
-                👁️
+              <button type="button" class="btn-action btn-action-view" data-id="${report.id}" title="Lihat Detail Lengkap" aria-label="Lihat Detail ${report.id}">
+                ${Icons.eye(15)}
               </button>
-              <button type="button" class="btn-action btn-action-print" data-id="${report.id}" title="Cetak PDF">
-                🖨️
+              <button type="button" class="btn-action btn-action-print" data-id="${report.id}" title="Cetak Dokumen PDF" aria-label="Cetak PDF ${report.id}">
+                ${Icons.printer(15)}
               </button>
-              <button type="button" class="btn-action btn-action-delete" data-id="${report.id}" title="Hapus Laporan dari IndexedDB">
-                🗑️
+              <button type="button" class="btn-action btn-action-delete" data-id="${report.id}" title="Hapus Laporan" aria-label="Hapus Laporan ${report.id}">
+                ${Icons.trash(15)}
               </button>
             </div>
           </td>
@@ -1016,6 +1511,10 @@ function initDataPageLogic(container) {
   function applySearchAndFilter() {
     const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
     const filterVal = complianceFilter ? complianceFilter.value : 'ALL';
+
+    if (btnClearSearch) {
+      btnClearSearch.style.display = query.length > 0 ? 'flex' : 'none';
+    }
 
     filteredReportsData = activeReportsData.filter(report => {
       const guruMatch = (report.guruPiket || '').toLowerCase().includes(query);
@@ -1036,6 +1535,24 @@ function initDataPageLogic(container) {
 
   if (searchInput) searchInput.addEventListener('input', applySearchAndFilter);
   if (complianceFilter) complianceFilter.addEventListener('change', applySearchAndFilter);
+
+  if (btnClearSearch) {
+    btnClearSearch.addEventListener('click', () => {
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+      applySearchAndFilter();
+    });
+  }
+
+  if (btnResetFilterEmpty) {
+    btnResetFilterEmpty.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      if (complianceFilter) complianceFilter.value = 'ALL';
+      applySearchAndFilter();
+    });
+  }
 
   function attachTableActionEvents() {
     container.querySelectorAll('.btn-action-view').forEach(btn => {
@@ -1087,29 +1604,44 @@ function initDataPageLogic(container) {
 
     modalFullDetailBody.innerHTML = `
       <section class="detail-section-card">
-        <div class="section-card-header">📌 Bagian 1: Identitas Pelaksanaan & Metrik Performa</div>
+        <div class="section-card-header">
+          ${Icons.checkCircle(15)}
+          <span>Identitas Pelaksanaan & Metrik Kepatuhan</span>
+        </div>
         <div class="section-card-body">
           <div class="identity-grid">
             <div>
-              <span class="info-item-label">Guru Piket Penanggung Jawab:</span>
-              <div class="info-item-value">🧑‍🏫 ${report.guruPiket}</div>
-            </div>
-            <div>
-              <span class="info-item-label">Tanggal Pelaksanaan:</span>
-              <div class="info-item-value">📅 ${report.tanggal}</div>
-            </div>
-            <div>
-              <span class="info-item-label">Skor Akhir Compliance:</span>
+              <span class="info-item-label">Guru Piket Penanggung Jawab</span>
               <div class="info-item-value">
-                <span class="status-badge ${statusClass}" style="font-size: 0.85rem; padding: 0.3rem 0.7rem;">
-                  ${percentage}% - ${statusText}
+                ${Icons.user(14)}
+                <span>${report.guruPiket}</span>
+              </div>
+            </div>
+            <div>
+              <span class="info-item-label">Tanggal Pelaksanaan</span>
+              <div class="info-item-value">
+                ${Icons.calendar(14)}
+                <span>${report.tanggal}</span>
+              </div>
+            </div>
+            <div>
+              <span class="info-item-label">Skor Kepatuhan Akhir</span>
+              <div class="info-item-value" style="margin-top: 0.35rem;">
+                <span class="status-badge ${statusClass}">
+                  <span class="status-badge-dot"></span>
+                  <span>${percentage}% · ${statusText}</span>
                 </span>
               </div>
             </div>
             <div style="grid-column: 1 / -1;">
-              <span class="info-item-label">Tim Petugas Harian (Piket):</span>
-              <div class="info-item-value" style="display: flex; gap: 0.5rem; margin-top: 0.3rem; flex-wrap: wrap;">
-                ${(report.petugas || []).map(p => `<span class="petugas-pill" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;">👤 ${p}</span>`).join('')}
+              <span class="info-item-label">Tim Petugas Harian</span>
+              <div class="info-item-value" style="display: flex; gap: 0.4rem; margin-top: 0.35rem; flex-wrap: wrap;">
+                ${(report.petugas || []).map(p => `
+                  <span class="petugas-tag">
+                    ${Icons.user(12)}
+                    <span>${p}</span>
+                  </span>
+                `).join('')}
               </div>
             </div>
           </div>
@@ -1118,16 +1650,17 @@ function initDataPageLogic(container) {
 
       <section class="detail-section-card">
         <div class="section-card-header">
-          ✅ Bagian 2: Matriks Lengkap Status 13 Poin Tugas Checklist (${trueCount} / 13 Dikerjakan)
+          ${Icons.documentText(15)}
+          <span>Matriks 13 Poin Indikator Adiwiyata (${trueCount} / 13 Terpenuhi)</span>
         </div>
         <div class="section-card-body" style="padding: 0;">
           <table class="uncut-matrix-table">
             <thead>
               <tr>
-                <th style="width: 60px;">No.</th>
-                <th style="width: 160px;">Kategori</th>
-                <th>Deskripsi Tugas Lengkap</th>
-                <th style="width: 130px;" class="text-center">Status Task</th>
+                <th style="width: 50px;">Kode</th>
+                <th style="width: 170px;">Kategori Indikator</th>
+                <th>Deskripsi Tugas Pelaksanaan</th>
+                <th style="width: 150px;" class="text-center">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -1139,27 +1672,33 @@ function initDataPageLogic(container) {
 
       <section class="detail-section-card">
         <div class="section-card-header">
-          📷 Bagian 3: Galeri Bukti Media Foto (${report.photos ? report.photos.length : 0} Foto)
+          ${Icons.image(15)}
+          <span>Dokumentasi Lapangan (${report.photos ? report.photos.length : 0} Foto)</span>
         </div>
         <div class="section-card-body">
           ${report.photos && report.photos.length > 0 ? `
             <div class="gallery-photo-grid">
               ${report.photos.map((photoUrl, idx) => `
                 <div class="gallery-photo-item" data-src="${photoUrl}" title="Klik untuk memperbesar foto ${idx + 1}">
-                  <img src="${photoUrl}" alt="Bukti Foto ${idx + 1}">
+                  <img src="${photoUrl}" alt="Dokumentasi ${idx + 1}" loading="lazy">
                 </div>
               `).join('')}
             </div>
           ` : `
-            <p style="font-size: 0.8rem; color: #94a3b8; margin: 0; font-style: italic;">Tidak ada foto lampiran pada laporan ini.</p>
+            <p style="font-size: 0.82rem; color: #94a3b8; margin: 0; font-style: italic;">Tidak ada foto dokumentasi pada laporan ini.</p>
           `}
         </div>
       </section>
 
       <section class="detail-section-card">
-        <div class="section-card-header">📝 Bagian 4: Narasi Catatan Evaluasi Utuh</div>
+        <div class="section-card-header">
+          ${Icons.documentText(15)}
+          <span>Catatan & Rekomendasi Evaluasi</span>
+        </div>
         <div class="section-card-body">
-          <p class="full-narrative-text">${report.catatan || 'Tidak ada catatan evaluasi narasi yang dituliskan.'}</p>
+          <div class="full-narrative-box">
+            <p class="full-narrative-text">${report.catatan || 'Tidak ada catatan narasi khusus yang dicantumkan.'}</p>
+          </div>
         </div>
       </section>
     `;
@@ -1190,20 +1729,26 @@ function initDataPageLogic(container) {
     return MASTER_CHECKLIST_ITEMS.map((item) => {
       const taskKey = keyMap[item.code];
       const val = tasksStatus[taskKey] !== undefined ? tasksStatus[taskKey] : tasksStatus[item.code];
-      
+
       const strVal = String(val).trim().toLowerCase();
       const isDone = (val === true || strVal === 'true' || val === 1 || strVal === '1');
 
       return `
         <tr>
-          <td style="font-weight: 700; color: var(--color-primary, #1b4332);">${item.code}</td>
-          <td style="color: #64748b; font-weight: 600;">${item.category}</td>
-          <td style="color: #334155; line-height: 1.4;">${item.label}</td>
+          <td><span class="id-code-badge" style="font-size: 0.72rem;">${item.code}</span></td>
+          <td style="color: #64748b; font-weight: 500;">${item.category}</td>
+          <td style="color: #334155; line-height: 1.45;">${item.label}</td>
           <td class="text-center">
             ${isDone ? `
-              <span class="badge-task-true">✓ DIKERJAKAN</span>
+              <span class="badge-task-status badge-task-true">
+                ${Icons.check(12)}
+                <span>Dikerjakan</span>
+              </span>
             ` : `
-              <span class="badge-task-false">✕ TIDAK DIKERJAKAN</span>
+              <span class="badge-task-status badge-task-false">
+                ${Icons.cross(12)}
+                <span>Tidak Dikerjakan</span>
+              </span>
             `}
           </td>
         </tr>
@@ -1226,6 +1771,17 @@ function initDataPageLogic(container) {
       if (photoLightboxModal) photoLightboxModal.classList.remove('active');
     });
   }
+
+  // Keyboard Navigation: Escape to close modals
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (photoLightboxModal && photoLightboxModal.classList.contains('active')) {
+        photoLightboxModal.classList.remove('active');
+      } else if (fullDetailModal && fullDetailModal.classList.contains('active')) {
+        closeDetailModal();
+      }
+    }
+  });
 
   renderTableRows();
 }
