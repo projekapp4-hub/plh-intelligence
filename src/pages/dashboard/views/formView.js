@@ -1,23 +1,48 @@
 /**
- * FORMVIEW.JS - Modul Form Input Data Laporan Kebersihan & Preservasi (Refactored)
+ * FORMVIEW.JS - Modul Form Input Data Laporan Kebersihan & Preservasi (Modern Enterprise Adiwiyata)
  * Path: src/pages/dashboard/views/formView.js
- * 
- * Mengimplementasikan arsitektur Single Page Application (SPA) card-based,
- * Live Compliance Engine, Bulk Action Controls, Drag & Drop Dropzone, 
- * Modal Quick Preview, Kompresi Gambar Otomatis (imageCompressor.js),
- * serta Penyimpanan Asinkron IndexedDB (storage.js - dss_records).
+ *
+ * Mengimplementasikan arsitektur Single Page Application (SPA),
+ * Live Compliance Engine dengan Floating Glassmorphism HUD, Segmented Pill Toggles,
+ * Modern Drag & Drop Media Dropzone, Modal Quick Preview,
+ * Kompresi Gambar Otomatis (imageCompressor.js), serta Penyimpanan Asinkron IndexedDB (dss_records).
  */
 
 import { compressImage, fileToBase64 } from '../../../utils/imageCompressor.js';
 import { saveItem } from '../../../utils/storage.js';
 
+// SVG Icon Pack (Lucide style, zero emojis)
+const ICONS = {
+  clipboard: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="m9 14 2 2 4-4"></path></svg>`,
+  user: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
+  calendar: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>`,
+  sparkles: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg>`,
+  recycle: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"></path><path d="M11 19h8.2a1.8 1.8 0 0 0 1.583-.914.79.79 0 0 0-.017-.792l-3.266-5.794"></path><path d="m11 19-3-6 3-6h8.5a1.8 1.8 0 0 1 1.583.914l3.184 5.686"></path><path d="m14 13-3 6"></path><path d="m4 13 3-6"></path><path d="m17 7-3-6"></path></svg>`,
+  sprout: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"></path><path d="M10 20c5.5-2.5.8-6.4 3-13"></path><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"></path><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"></path></svg>`,
+  zap: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+  droplet: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path></svg>`,
+  uploadCloud: `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path></svg>`,
+  check: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+  x: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`,
+  refresh: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>`,
+  eye: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+  save: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>`,
+  alertTriangle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+  checkCircle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+  camera: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>`,
+  users: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
+  listCheck: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"></path><path d="m3 7 2 2 4-4"></path><path d="M13 6h8"></path><path d="M13 12h8"></path><path d="M13 18h8"></path></svg>`,
+  fileText: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`
+};
+
 // Data Struktur 13 Poin Tugas Checklist dalam 5 Kategori
 const CHECKLIST_CATEGORIES = [
   {
     id: 'kat_1',
-    title: 'Kategori 1: Kebersihan dan Sanitasi',
-    icon: '🧹',
-    colorTheme: 'teal',
+    code: 'KAT-1',
+    title: 'Kebersihan dan Sanitasi',
+    iconSvg: ICONS.sparkles,
+    badgeColor: 'emerald',
     items: [
       { id: 'task_1_1', code: '1.1', label: 'Menyikat dan membersihkan WC lantai 1 dan lantai 2 sekolah.' },
       { id: 'task_1_2', code: '1.2', label: 'Menyapu dan mengepel koridor lantai 1 dan lantai 2 sekolah.' },
@@ -26,9 +51,10 @@ const CHECKLIST_CATEGORIES = [
   },
   {
     id: 'kat_2',
-    title: 'Kategori 2: Pengelolaan Sampah',
-    icon: '♻️',
-    colorTheme: 'amber',
+    code: 'KAT-2',
+    title: 'Pengelolaan Sampah',
+    iconSvg: ICONS.recycle,
+    badgeColor: 'amber',
     items: [
       { id: 'task_2_1', code: '2.1', label: 'Membawa sampah ke bank sampah.' },
       { id: 'task_2_2', code: '2.2', label: 'Memilah sampah organik, unorganik, dan residu.' },
@@ -38,9 +64,10 @@ const CHECKLIST_CATEGORIES = [
   },
   {
     id: 'kat_3',
-    title: 'Kategori 3: Keanekaragaman Hayati',
-    icon: '🌱',
-    colorTheme: 'emerald',
+    code: 'KAT-3',
+    title: 'Keanekaragaman Hayati',
+    iconSvg: ICONS.sprout,
+    badgeColor: 'teal',
     items: [
       { id: 'task_3_1', code: '3.1', label: 'Berkebun di green house (mengolah lahan, menanam, merawat, memanen, atau memasarkan).' },
       { id: 'task_3_2', code: '3.2', label: 'Beternak ikan (merawat, memanen, atau memasarkan).' },
@@ -49,26 +76,28 @@ const CHECKLIST_CATEGORIES = [
   },
   {
     id: 'kat_4',
-    title: 'Kategori 4: Penghematan Energi',
-    icon: '⚡',
-    colorTheme: 'yellow',
+    code: 'KAT-4',
+    title: 'Penghematan Energi',
+    iconSvg: ICONS.zap,
+    badgeColor: 'yellow',
     items: [
-      { id: 'task_4_1', code: '4.1', label: 'Melakukan pengecekan penggunaan kipas angin dan lampu penerangan di masjid (shof putra & putri). Mematikan kipas angin serta lampu penerangan jika tidak ada yang menggunakan dan melaporkan ke guru piket.' }
+      { id: 'task_4_1', code: '4.1', label: 'Melakukan pengecekan penggunaan kipas angin dan lampu penerangan di masjid (shof putra & putri). Mematikan peralatan listrik jika tidak digunakan dan melapor ke guru piket.' }
     ]
   },
   {
     id: 'kat_5',
-    title: 'Kategori 5: Penghematan Air',
-    icon: '💧',
-    colorTheme: 'blue',
+    code: 'KAT-5',
+    title: 'Penghematan Air',
+    iconSvg: ICONS.droplet,
+    badgeColor: 'sky',
     items: [
-      { id: 'task_5_1', code: '5.1', label: 'Melakukan pengecekan keran air di toilet dan di tempat wudhu putra & putri. Melaporkan ke guru piket jika ada kebocoran/kerusakan ataupun jika ada keran air yang dibiarkan mengalir tanpa digunakan.' },
-      { id: 'task_5_2', code: '5.2', label: 'Menyiram tanaman di green house menggunakan air tadah hujan di toren samping asrama.' }
+      { id: 'task_5_1', code: '5.1', label: 'Melakukan pengecekan keran air di toilet dan tempat wudhu. Melaporkan ke guru piket jika terjadi kebocoran atau pemborosan air.' },
+      { id: 'task_5_2', code: '5.2', label: 'Menyiram tanaman di green house menggunakan air tadah hujan di toren penampungan samping asrama.' }
     ]
   }
 ];
 
-// Array Penampung Berkas Foto yang Diunggah (Menyimpan Objek { file, src })
+// Array Penampung Berkas Foto yang Diunggah ({ file, src })
 let uploadedPhotos = [];
 
 /**
@@ -76,150 +105,193 @@ let uploadedPhotos = [];
  * @param {HTMLElement} container - Elemen pembungkus #spaCanvas
  */
 export function render(container) {
-  // Format Tanggal Hari Ini (YYYY-MM-DD)
   const todayISO = new Date().toISOString().split('T')[0];
 
   // 1. Injeksi Struktur Markup HTML
   container.innerHTML = `
     <div class="form-wrapper">
-      
-      <!-- HEADER FORM & STICKY LIVE SCORING DASHBOARD -->
+
+      <!-- HEADER FORM DENGAN ENTERPRISE BRANDING -->
       <header class="form-header-card">
-        <div class="header-identity">
-          <div class="identity-icon">📋</div>
-          <div class="identity-text">
+        <div class="header-main-row">
+          <div class="identity-badge-icon">
+            ${ICONS.clipboard}
+          </div>
+          <div class="identity-text-group">
+            <div class="identity-meta-row">
+              <span class="compliance-tag">Adiwiyata Compliance</span>
+              <span class="version-tag">Instrumen Standar Mutu</span>
+            </div>
             <h1 class="form-title">Form Laporan Kebersihan & Preservasi Lingkungan</h1>
-            <p class="form-subtitle">Lembar kerja digital pengisian evaluasi harian piket lingkungan Adiwiyata sekolah.</p>
+            <p class="form-subtitle">Instrumen digital evaluasi harian kepatuhan pemeliharaan lingkungan sekolah berbasis data.</p>
           </div>
         </div>
 
-        <!-- STICKY LIVE SCORING BAR -->
-        <div class="sticky-score-bar" id="stickyScoreBar">
-          <div class="score-bar-top">
-            <div class="completion-info">
-              <span class="completion-label">Kelengkapan Form:</span>
-              <strong id="completionText" class="completion-count">0 dari 13 Tugas Terisi</strong>
+        <!-- FLOATING LIVE COMPLIANCE HUD BAR -->
+        <div class="floating-hud-bar" id="stickyScoreBar">
+          <div class="hud-main-grid">
+
+            <div class="hud-stat-item">
+              <span class="hud-stat-label">Kelengkapan Form</span>
+              <div class="hud-stat-val-group">
+                <strong id="completionText" class="hud-stat-value">0 / 13</strong>
+                <span class="hud-stat-unit">Tugas Terisi</span>
+              </div>
             </div>
-            <div class="score-badge-wrapper">
-              <span class="score-label">Skor Capaian:</span>
-              <span id="scorePercentage" class="score-value">0%</span>
-              <span id="statusBadge" class="status-badge badge-gray">Belum Lengkap</span>
+
+            <div class="hud-stat-divider"></div>
+
+            <div class="hud-stat-item">
+              <span class="hud-stat-label">Skor Kepatuhan</span>
+              <div class="hud-stat-val-group">
+                <span id="scorePercentage" class="hud-score-pct">0%</span>
+                <span id="statusBadge" class="hud-badge badge-neutral">Belum Lengkap</span>
+              </div>
             </div>
+
+            <div class="hud-stat-divider"></div>
+
+            <!-- PANEL AKSI CEPAT (BULK ACTIONS) -->
+            <div class="hud-actions-group">
+              <button type="button" id="btnMarkAllTrue" class="hud-action-btn btn-action-true" title="Tandai seluruh tugas dengan status TRUE">
+                <span class="btn-icon-svg">${ICONS.check}</span> Semua TRUE
+              </button>
+              <button type="button" id="btnMarkAllFalse" class="hud-action-btn btn-action-false" title="Tandai seluruh tugas dengan status FALSE">
+                <span class="btn-icon-svg">${ICONS.x}</span> Semua FALSE
+              </button>
+              <button type="button" id="btnResetForm" class="hud-action-btn btn-action-reset" title="Kosongkan seluruh isian form">
+                <span class="btn-icon-svg">${ICONS.refresh}</span> Reset
+              </button>
+            </div>
+
           </div>
 
-          <!-- Progress Bar Visual -->
-          <div class="progress-track">
-            <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
-          </div>
-
-          <!-- PANEL AKSI CEPAT CHECKLIST (BULK ACTIONS) -->
-          <div class="bulk-actions-panel">
-            <span class="bulk-label">Aksi Cepat Checklist:</span>
-            <div class="bulk-buttons">
-              <button type="button" id="btnMarkAllTrue" class="btn-bulk btn-bulk-true">
-                ✓ Tandai Semua TRUE
-              </button>
-              <button type="button" id="btnMarkAllFalse" class="btn-bulk btn-bulk-false">
-                ✕ Tandai Semua FALSE
-              </button>
-              <button type="button" id="btnResetForm" class="btn-bulk btn-bulk-reset">
-                🔄 Reset Form
-              </button>
-            </div>
+          <!-- Progress Bar Track -->
+          <div class="hud-progress-container" aria-label="Progress kelengkapan form">
+            <div id="progressFill" class="hud-progress-bar" style="width: 0%;"></div>
           </div>
         </div>
       </header>
 
       <!-- FORM UTAMA -->
       <form id="plhReportForm" class="report-form" novalidate>
-        
-        <!-- BAGIAN FORM 1: INFORMASI PETUGAS & PELAKSANAAN -->
-        <section class="form-card">
-          <div class="card-header">
-            <h2 class="card-title">👤 Bagian 1: Informasi Petugas & Pelaksanaan</h2>
-            <p class="card-subtitle">Masukkan data administratif penanggung jawab dan tim piket harian.</p>
+
+        <!-- BAGIAN 1: INFORMASI PETUGAS & PELAKSANAAN -->
+        <section class="section-card">
+          <div class="section-header">
+            <div class="section-number-badge">01</div>
+            <div class="section-title-wrap">
+              <h2 class="section-title">Informasi Petugas & Pelaksanaan</h2>
+              <p class="section-subtitle">Data administratif penanggung jawab dan tim pelaksana piket harian.</p>
+            </div>
           </div>
-          <div class="card-body">
-            
-            <!-- Grid Baris 1: Guru Piket & Tanggal (2 Kolom Desktop) -->
-            <div class="form-grid grid-2-col">
-              <div class="form-group">
-                <label for="guruPiket" class="form-label">Guru Piket Penanggung Jawab <span class="required">*</span></label>
-                <div class="input-icon-wrapper">
-                  <span class="input-icon">🧑‍🏫</span>
-                  <input type="text" id="guruPiket" name="guruPiket" class="form-control" placeholder="Nama lengkap guru piket" required>
+
+          <div class="section-body">
+            <!-- Grid Baris 1: Guru Piket & Tanggal -->
+            <div class="form-grid grid-cols-2">
+              <div class="form-field-group">
+                <label for="guruPiket" class="field-label">Guru Piket Penanggung Jawab <span class="req-star">*</span></label>
+                <div class="field-input-wrap">
+                  <span class="field-icon">${ICONS.user}</span>
+                  <input type="text" id="guruPiket" name="guruPiket" class="form-input" placeholder="Masukkan nama lengkap guru piket" required autocomplete="off">
                 </div>
-                <span class="error-msg" id="err-guruPiket">Wajib diisi</span>
+                <span class="field-error-text" id="err-guruPiket">Nama guru piket wajib diisi</span>
               </div>
 
-              <div class="form-group">
-                <label for="tanggalPiket" class="form-label">Tanggal Pelaksanaan <span class="required">*</span></label>
-                <div class="input-icon-wrapper">
-                  <span class="input-icon">📅</span>
-                  <input type="date" id="tanggalPiket" name="tanggalPiket" class="form-control" value="${todayISO}" required>
+              <div class="form-field-group">
+                <label for="tanggalPiket" class="field-label">Tanggal Pelaksanaan <span class="req-star">*</span></label>
+                <div class="field-input-wrap">
+                  <span class="field-icon">${ICONS.calendar}</span>
+                  <input type="date" id="tanggalPiket" name="tanggalPiket" class="form-input" value="${todayISO}" required>
                 </div>
-                <span class="error-msg" id="err-tanggalPiket">Tanggal wajib dipilih</span>
+                <span class="field-error-text" id="err-tanggalPiket">Tanggal pelaksanaan wajib dipilih</span>
               </div>
             </div>
 
-            <!-- Grid Baris 2: Petugas 1, 2, 3 (3 Kolom Desktop) -->
-            <div class="form-grid grid-3-col">
-              <div class="form-group">
-                <label for="petugas1" class="form-label">Petugas 1 <span class="required">*</span></label>
-                <input type="text" id="petugas1" name="petugas1" class="form-control" placeholder="Nama santri/petugas 1" required>
-                <span class="error-msg" id="err-petugas1">Wajib diisi</span>
+            <!-- Grid Baris 2: Tim Petugas (3 Kolom) -->
+            <div class="form-grid grid-cols-3">
+              <div class="form-field-group">
+                <label for="petugas1" class="field-label">Petugas 1 <span class="req-star">*</span></label>
+                <div class="field-input-wrap">
+                  <span class="field-icon">${ICONS.user}</span>
+                  <input type="text" id="petugas1" name="petugas1" class="form-input" placeholder="Nama petugas 1" required autocomplete="off">
+                </div>
+                <span class="field-error-text" id="err-petugas1">Petugas 1 wajib diisi</span>
               </div>
 
-              <div class="form-group">
-                <label for="petugas2" class="form-label">Petugas 2 <span class="required">*</span></label>
-                <input type="text" id="petugas2" name="petugas2" class="form-control" placeholder="Nama santri/petugas 2" required>
-                <span class="error-msg" id="err-petugas2">Wajib diisi</span>
+              <div class="form-field-group">
+                <label for="petugas2" class="field-label">Petugas 2 <span class="req-star">*</span></label>
+                <div class="field-input-wrap">
+                  <span class="field-icon">${ICONS.user}</span>
+                  <input type="text" id="petugas2" name="petugas2" class="form-input" placeholder="Nama petugas 2" required autocomplete="off">
+                </div>
+                <span class="field-error-text" id="err-petugas2">Petugas 2 wajib diisi</span>
               </div>
 
-              <div class="form-group">
-                <label for="petugas3" class="form-label">Petugas 3 <span class="required">*</span></label>
-                <input type="text" id="petugas3" name="petugas3" class="form-control" placeholder="Nama santri/petugas 3" required>
-                <span class="error-msg" id="err-petugas3">Wajib diisi</span>
+              <div class="form-field-group">
+                <label for="petugas3" class="field-label">Petugas 3 <span class="req-star">*</span></label>
+                <div class="field-input-wrap">
+                  <span class="field-icon">${ICONS.user}</span>
+                  <input type="text" id="petugas3" name="petugas3" class="form-input" placeholder="Nama petugas 3" required autocomplete="off">
+                </div>
+                <span class="field-error-text" id="err-petugas3">Petugas 3 wajib diisi</span>
               </div>
             </div>
-
           </div>
         </section>
 
-        <!-- BAGIAN FORM 2: EVALUASI 13 POIN TUGAS CHECKLIST (5 KATEGORI) -->
-        <section class="form-card">
-          <div class="card-header">
-            <h2 class="card-title">✅ Bagian 2: Evaluasi 13 Poin Tugas Checklist</h2>
-            <p class="card-subtitle">Pilih status keterlaksanaan untuk setiap indikator tugas harian.</p>
+        <!-- BAGIAN 2: EVALUASI 13 POIN TUGAS CHECKLIST (5 KATEGORI) -->
+        <section class="section-card">
+          <div class="section-header">
+            <div class="section-number-badge">02</div>
+            <div class="section-title-wrap">
+              <h2 class="section-title">Evaluasi 13 Poin Checklist Kepatuhan</h2>
+              <p class="section-subtitle">Tentukan status keterlaksanaan untuk setiap indikator tugas pemeliharaan lingkungan.</p>
+            </div>
           </div>
-          <div class="card-body categories-container">
+
+          <div class="section-body categories-wrapper">
             ${renderCategoriesMarkup()}
           </div>
         </section>
 
-        <!-- BAGIAN FORM 3: LAMPIRAN MEDIA FOTO & NARASI EVALUASI -->
-        <section class="form-card">
-          <div class="card-header">
-            <h2 class="card-title">📷 Bagian 3: Dokumentasi Foto & Narasi Evaluasi</h2>
-            <p class="card-subtitle">Unggah bukti fisik foto kegiatan dan tuliskan catatan observasi harian.</p>
+        <!-- BAGIAN 3: DOKUMENTASI MEDIA & CATATAN EVALUASI -->
+        <section class="section-card">
+          <div class="section-header">
+            <div class="section-number-badge">03</div>
+            <div class="section-title-wrap">
+              <h2 class="section-title">Dokumentasi Foto & Narasi Lapangan</h2>
+              <p class="section-subtitle">Lampirkan bukti visual fisik kegiatan dan catatan observasi evaluatif.</p>
+            </div>
           </div>
-          <div class="card-body">
-            
-            <!-- Area Unggah Drag & Drop -->
-            <div class="form-group">
-              <label class="form-label">Unggah Foto Dokumentasi (Maksimal 5 Foto)</label>
-              <div id="dropzone" class="dropzone-area">
-                <div class="dropzone-content" id="dropzoneContent">
-                  <span class="dropzone-icon">☁️📷</span>
-                  <p class="dropzone-text"><strong>Tarik & lepas file foto di sini</strong>, atau klik untuk memilih</p>
-                  <p class="dropzone-hint">Format yang didukung: JPG, PNG, WEBP (Maksimal 5 Foto). Foto akan dikompresi otomatis.</p>
+
+          <div class="section-body">
+            <!-- Modern Drag & Drop Zone -->
+            <div class="form-field-group">
+              <div class="field-label-with-meta">
+                <label class="field-label">Unggah Foto Dokumentasi Kegiatan</label>
+                <span class="meta-limit-badge">Maksimal 5 Foto • Auto Kompresi &lt; 1MB</span>
+              </div>
+
+              <div id="dropzone" class="modern-dropzone" tabindex="0" role="button" aria-label="Dropzone upload foto kegiatan">
+                <div class="dropzone-inner" id="dropzoneContent">
+                  <div class="dropzone-icon-circle">
+                    ${ICONS.uploadCloud}
+                  </div>
+                  <div class="dropzone-text-group">
+                    <p class="dropzone-primary-text">
+                      <strong>Tarik & letakkan foto di sini</strong>, atau <span class="text-accent">telusuri berkas</span>
+                    </p>
+                    <p class="dropzone-secondary-text">Format: JPG, PNG, WEBP (Otomatis dikompresi ke 1280px WebP/JPEG)</p>
+                  </div>
                 </div>
                 <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple class="file-input-hidden">
               </div>
 
-              <!-- Status Loading Kompresi Foto -->
-              <div id="uploadStatusText" class="upload-status-text" style="display: none; margin-top: 0.5rem; font-size: 0.8rem; color: #1b4332; font-weight: 600;">
-                ⏳ Memproses dan mengompresi gambar...
+              <!-- State Loading Kompresi -->
+              <div id="uploadStatusText" class="upload-processing-indicator" style="display: none;">
+                <span class="processing-spinner"></span>
+                <span>Memproses dan mengompresi gambar otomatis...</span>
               </div>
 
               <!-- Grid Pratinjau Foto Thumbnail -->
@@ -227,656 +299,1079 @@ export function render(container) {
             </div>
 
             <!-- Kolom Catatan & Evaluasi Narasi -->
-            <div class="form-group">
-              <label for="catatanEvaluasi" class="form-label">Catatan & Evaluasi Narasi (Opsional)</label>
-              <textarea id="catatanEvaluasi" name="catatanEvaluasi" class="form-control textarea-control" rows="4" placeholder="Tuliskan temuan khusus, kendala teknis di lapangan, alasan tugas FALSE, atau saran perbaikan..."></textarea>
+            <div class="form-field-group mt-4">
+              <label for="catatanEvaluasi" class="field-label">Catatan & Evaluasi Narasi Lapangan <span class="optional-tag">(Opsional)</span></label>
+              <textarea id="catatanEvaluasi" name="catatanEvaluasi" class="form-input textarea-input" rows="4" placeholder="Tuliskan temuan lapangan, kendala teknis, klarifikasi jika ada tugas yang FALSE, atau rekomendasi tindak lanjut..."></textarea>
             </div>
-
           </div>
         </section>
 
-        <!-- PANEL VALIDASI & ACTION BUTTONS -->
-        <div class="form-actions-wrapper">
-          
-          <!-- Validation Alert Box -->
-          <div id="validationAlert" class="validation-alert-box">
-            <span class="alert-icon">⚠️</span>
-            <span class="alert-text">Lengkapi seluruh data petugas dan 13 poin checklist untuk mengaktifkan tombol simpan.</span>
+        <!-- PANEL VALIDASI & ACTIONS FOOTER -->
+        <div class="form-footer-actions">
+
+          <!-- Validation Warning Banner -->
+          <div id="validationAlert" class="validation-banner">
+            <span class="banner-icon">${ICONS.alertTriangle}</span>
+            <div class="banner-text">
+              <strong>Formulir Belum Lengkap:</strong> Harap isi seluruh data petugas dan tentukan status pada 13 poin checklist untuk mengaktifkan tombol penyimpanan.
+            </div>
           </div>
 
-          <div class="action-buttons-group">
-            <button type="button" id="btnQuickPreview" class="btn btn-secondary btn-preview">
-              👁️ Quick Preview
+          <div class="actions-button-row">
+            <button type="button" id="btnQuickPreview" class="btn-action btn-secondary-preview">
+              <span class="btn-icon">${ICONS.eye}</span>
+              <span>Quick Preview</span>
             </button>
-            <button type="submit" id="btnSubmitForm" class="btn btn-primary btn-submit" disabled>
-              💾 Simpan Laporan Data
+            <button type="submit" id="btnSubmitForm" class="btn-action btn-primary-submit" disabled>
+              <span class="btn-icon">${ICONS.save}</span>
+              <span>Simpan Laporan Data</span>
             </button>
           </div>
+
         </div>
 
       </form>
 
       <!-- JENDELA MODAL QUICK PREVIEW -->
-      <div id="previewModal" class="modal-overlay" aria-hidden="true">
-        <div class="modal-card">
-          <div class="modal-header">
-            <h3 class="modal-title">👁️ Pratinjau Ringkasan Laporan</h3>
-            <button type="button" id="btnCloseModal" class="modal-close-btn">✕</button>
+      <div id="previewModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-dialog-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+          <div class="modal-dialog-header">
+            <div class="modal-header-left">
+              <span class="modal-icon-badge">${ICONS.fileText}</span>
+              <h3 id="modalTitle" class="modal-heading">Pratinjau Ringkasan Laporan</h3>
+            </div>
+            <button type="button" id="btnCloseModal" class="modal-close-button" aria-label="Tutup pratinjau">
+              ${ICONS.x}
+            </button>
           </div>
-          <div class="modal-body" id="modalPreviewBody">
-            <!-- Konten pratinjau dirender secara dinamis melalui JavaScript -->
+
+          <div class="modal-dialog-body" id="modalPreviewBody">
+            <!-- Konten pratinjau dirender secara dinamis -->
           </div>
-          <div class="modal-footer">
-            <button type="button" id="btnBackEdit" class="btn btn-secondary">Kembali Edit</button>
-            <button type="button" id="btnConfirmSave" class="btn btn-primary" disabled>Konfirmasi & Simpan</button>
+
+          <div class="modal-dialog-footer">
+            <button type="button" id="btnBackEdit" class="modal-btn modal-btn-secondary">Kembali Edit</button>
+            <button type="button" id="btnConfirmSave" class="modal-btn modal-btn-primary" disabled>
+              <span class="btn-icon">${ICONS.save}</span>
+              <span>Konfirmasi & Simpan</span>
+            </button>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- STYLING SCOPED UNTUK FORMVIEW MODULE -->
+    <!-- SCOPED ENTERPRISE CSS -->
     <style>
       .form-wrapper {
         display: flex;
         flex-direction: column;
-        gap: 1.25rem;
+        gap: 1.5rem;
         width: 100%;
-        padding-bottom: 3rem;
+        max-width: 1080px;
+        margin: 0 auto;
+        padding-bottom: 4rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #1e293b;
       }
 
-      /* Card Common Style */
-      .form-header-card, .form-card {
-        background-color: #ffffff;
-        border: 1px solid var(--color-border, #e2e8f0);
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-        overflow: hidden;
-      }
-
+      /* Form Header Card */
       .form-header-card {
-        padding: 1.25rem;
-        border-top: 4px solid var(--color-primary, #1b4332);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
       }
 
-      .header-identity {
+      .header-main-row {
         display: flex;
         align-items: flex-start;
-        gap: 1rem;
-        margin-bottom: 1.25rem;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
       }
 
-      .identity-icon {
-        font-size: 2.2rem;
-        line-height: 1;
+      .identity-badge-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .identity-text-group {
+        flex: 1;
+      }
+
+      .identity-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.35rem;
+      }
+
+      .compliance-tag {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 0.15rem 0.55rem;
+        border-radius: 6px;
+        background: #065f46;
+        color: #ffffff;
+      }
+
+      .version-tag {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #64748b;
+        background: #f1f5f9;
+        padding: 0.15rem 0.55rem;
+        border-radius: 6px;
       }
 
       .form-title {
         margin: 0;
-        font-size: 1.25rem;
+        font-size: 1.28rem;
         font-weight: 800;
-        color: var(--color-primary, #1b4332);
+        color: #0f172a;
+        letter-spacing: -0.01em;
       }
 
       .form-subtitle {
-        margin: 0.25rem 0 0 0;
-        font-size: 0.8rem;
+        margin: 0.3rem 0 0 0;
+        font-size: 0.84rem;
         color: #64748b;
+        line-height: 1.45;
       }
 
-      /* Sticky Score Bar */
-      .sticky-score-bar {
+      /* Floating Glassmorphism Compliance HUD */
+      .floating-hud-bar {
         position: sticky;
-        top: 64px;
-        z-index: 70;
-        background-color: #f8fafc;
+        top: 1rem;
+        z-index: 50;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border: 1px solid #cbd5e1;
-        border-radius: 10px;
-        padding: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      }
-
-      .score-bar-top {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-      }
-
-      @media (min-width: 640px) {
-        .score-bar-top {
-          flex-direction: row;
-          justify-content: space-between;
-          align-items: center;
-        }
-      }
-
-      .completion-info {
-        font-size: 0.85rem;
-        color: #334155;
-      }
-
-      .completion-count {
-        color: var(--color-primary, #1b4332);
-      }
-
-      .score-badge-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.85rem;
-      }
-
-      .score-value {
-        font-weight: 800;
-        font-size: 1.1rem;
-        color: var(--color-primary, #1b4332);
-      }
-
-      /* Status Badges */
-      .status-badge {
-        font-size: 0.75rem;
-        font-weight: 700;
-        padding: 0.25rem 0.6rem;
         border-radius: 12px;
-        text-transform: uppercase;
-      }
-      .badge-gray { background-color: #e2e8f0; color: #475569; }
-      .badge-green { background-color: #d1fae5; color: #065f46; }
-      .badge-blue { background-color: #dbeafe; color: #1e40af; }
-      .badge-yellow { background-color: #fef3c7; color: #92400e; }
-
-      .progress-track {
-        width: 100%;
-        height: 8px;
-        background-color: #e2e8f0;
-        border-radius: 4px;
-        overflow: hidden;
-        margin-bottom: 0.85rem;
+        padding: 0.85rem 1.15rem;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+        transition: box-shadow 0.2s ease;
       }
 
-      .progress-fill {
-        height: 100%;
-        background-color: var(--color-primary, #1b4332);
-        transition: width 0.3s ease;
-      }
-
-      /* Bulk Actions Panel */
-      .bulk-actions-panel {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid #e2e8f0;
-      }
-
-      @media (min-width: 640px) {
-        .bulk-actions-panel {
-          flex-direction: row;
-          align-items: center;
-          justify-content: space-between;
-        }
-      }
-
-      .bulk-label {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #64748b;
-      }
-
-      .bulk-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-      }
-
-      .btn-bulk {
-        font-size: 0.75rem;
-        font-weight: 700;
-        padding: 0.4rem 0.75rem;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .btn-bulk-true { background-color: #d1fae5; color: #065f46; }
-      .btn-bulk-true:hover { background-color: #a7f3d0; }
-      
-      .btn-bulk-false { background-color: #fee2e2; color: #991b1b; }
-      .btn-bulk-false:hover { background-color: #fca5a5; }
-
-      .btn-bulk-reset { background-color: #f1f5f9; color: #475569; }
-      .btn-bulk-reset:hover { background-color: #e2e8f0; }
-
-      /* Form Cards Body */
-      .card-header {
-        padding: 1rem 1.25rem;
-        background-color: #f8fafc;
-        border-bottom: 1px solid #e2e8f0;
-      }
-
-      .card-title {
-        margin: 0;
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--color-primary, #1b4332);
-      }
-
-      .card-subtitle {
-        margin: 0.2rem 0 0 0;
-        font-size: 0.75rem;
-        color: #64748b;
-      }
-
-      .card-body {
-        padding: 1.25rem;
-      }
-
-      /* Form Controls Layout */
-      .form-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 1rem;
-        margin-bottom: 1rem;
-      }
-
-      @media (min-width: 640px) {
-        .grid-2-col { grid-template-columns: repeat(2, 1fr); }
-        .grid-3-col { grid-template-columns: repeat(3, 1fr); }
-      }
-
-      .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-      }
-
-      .form-label {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: #334155;
-      }
-
-      .required { color: #ef4444; }
-
-      .input-icon-wrapper {
-        position: relative;
-        display: flex;
-        align-items: center;
-      }
-
-      .input-icon {
-        position: absolute;
-        left: 0.75rem;
-        font-size: 1rem;
-      }
-
-      .form-control {
-        width: 100%;
-        padding: 0.65rem 0.75rem;
-        font-size: 0.85rem;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        font-family: inherit;
-        outline: none;
-        transition: border-color 0.2s;
-      }
-
-      .input-icon-wrapper .form-control {
-        padding-left: 2.4rem;
-      }
-
-      .form-control:focus {
-        border-color: var(--color-primary, #1b4332);
-        box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
-      }
-
-      .textarea-control {
-        resize: vertical;
-        min-height: 90px;
-      }
-
-      .error-msg {
-        font-size: 0.7rem;
-        color: #dc2626;
-        display: none;
-      }
-
-      .form-group.has-error .error-msg {
-        display: block;
-      }
-
-      .form-group.has-error .form-control {
-        border-color: #ef4444;
-      }
-
-      /* Category & Checklist Items */
-      .categories-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-      }
-
-      .category-block {
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        overflow: hidden;
-      }
-
-      .category-header {
-        padding: 0.75rem 1rem;
-        background-color: #f1f5f9;
-        font-weight: 700;
-        font-size: 0.9rem;
-        color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .task-list {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .task-item-row {
+      .hud-main-grid {
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-        padding: 1rem;
+      }
+
+      @media (min-width: 768px) {
+        .hud-main-grid {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+      }
+
+      .hud-stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+      }
+
+      .hud-stat-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .hud-stat-val-group {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      .hud-stat-value {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0f172a;
+      }
+
+      .hud-stat-unit {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 500;
+      }
+
+      .hud-score-pct {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #065f46;
+      }
+
+      .hud-stat-divider {
+        display: none;
+        width: 1px;
+        height: 28px;
+        background: #e2e8f0;
+      }
+
+      @media (min-width: 768px) {
+        .hud-stat-divider {
+          display: block;
+        }
+      }
+
+      .hud-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.2rem 0.6rem;
+        border-radius: 9999px;
+        letter-spacing: 0.02em;
+      }
+
+      .badge-neutral { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+      .badge-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+      .badge-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+      .badge-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+
+      /* Bulk Action Buttons */
+      .hud-actions-group {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      .hud-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.74rem;
+        font-weight: 600;
+        padding: 0.35rem 0.7rem;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        background: #ffffff;
+      }
+
+      .btn-icon-svg {
+        display: flex;
+        align-items: center;
+      }
+
+      .btn-action-true {
+        background: #f0fdf4;
+        color: #15803d;
+        border-color: #bbf7d0;
+      }
+      .btn-action-true:hover {
+        background: #dcfce7;
+        border-color: #86efac;
+      }
+
+      .btn-action-false {
+        background: #fff1f2;
+        color: #be123c;
+        border-color: #fecdd3;
+      }
+      .btn-action-false:hover {
+        background: #ffe4e6;
+        border-color: #fda4af;
+      }
+
+      .btn-action-reset {
+        background: #f8fafc;
+        color: #475569;
+        border-color: #cbd5e1;
+      }
+      .btn-action-reset:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+      }
+
+      /* Progress Bar */
+      .hud-progress-container {
+        width: 100%;
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 9999px;
+        overflow: hidden;
+        margin-top: 0.75rem;
+      }
+
+      .hud-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #059669);
+        border-radius: 9999px;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Section Cards */
+      .section-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 1.15rem 1.5rem;
+        background: #fafafa;
         border-bottom: 1px solid #f1f5f9;
       }
 
-      .task-item-row:last-child {
-        border-bottom: none;
+      .section-number-badge {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: #065f46;
+        color: #ffffff;
+        font-size: 0.76rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .section-title-wrap {
+        flex: 1;
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .section-subtitle {
+        margin: 0.15rem 0 0 0;
+        font-size: 0.78rem;
+        color: #64748b;
+      }
+
+      .section-body {
+        padding: 1.5rem;
+      }
+
+      /* Grid System */
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
       }
 
       @media (min-width: 640px) {
-        .task-item-row {
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+      }
+
+      .grid-cols-3 {
+        margin-top: 1.25rem;
+      }
+
+      /* Form Fields */
+      .form-field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .field-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #334155;
+      }
+
+      .field-label-with-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.2rem;
+      }
+
+      .meta-limit-badge {
+        font-size: 0.72rem;
+        color: #64748b;
+        background: #f1f5f9;
+        padding: 0.15rem 0.45rem;
+        border-radius: 4px;
+        font-weight: 500;
+      }
+
+      .req-star {
+        color: #e11d48;
+      }
+
+      .optional-tag {
+        font-size: 0.74rem;
+        font-weight: 400;
+        color: #94a3b8;
+      }
+
+      .field-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .field-icon {
+        position: absolute;
+        left: 0.85rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        pointer-events: none;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 0.65rem 0.85rem 0.65rem 2.45rem;
+        font-size: 0.86rem;
+        color: #0f172a;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        outline: none;
+        transition: all 0.15s ease;
+        font-family: inherit;
+      }
+
+      .form-input:focus {
+        border-color: #059669;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+      }
+
+      .textarea-input {
+        padding: 0.75rem;
+        resize: vertical;
+        min-height: 90px;
+        line-height: 1.5;
+      }
+
+      .field-error-text {
+        font-size: 0.72rem;
+        color: #e11d48;
+        display: none;
+        font-weight: 500;
+      }
+
+      .form-field-group.has-error .field-error-text {
+        display: block;
+      }
+
+      .form-field-group.has-error .form-input {
+        border-color: #e11d48;
+        background-color: #fff1f2;
+      }
+
+      /* Checklist Categories Container */
+      .categories-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+
+      .category-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #ffffff;
+        overflow: hidden;
+      }
+
+      .category-header-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 1.15rem;
+        background: #f8fafc;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .category-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+      }
+
+      .category-icon-box {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+      }
+
+      .category-name {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #1e293b;
+      }
+
+      .category-badge-pill {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #64748b;
+        background: #e2e8f0;
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+      }
+
+      .category-tasks-list {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .task-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: 1rem 1.15rem;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.15s ease;
+      }
+
+      .task-row:last-child {
+        border-bottom: none;
+      }
+
+      .task-row:hover {
+        background-color: #fafbfc;
+      }
+
+      @media (min-width: 640px) {
+        .task-row {
           flex-direction: row;
           align-items: center;
           justify-content: space-between;
         }
       }
 
-      .task-info {
+      .task-content-group {
         display: flex;
+        align-items: flex-start;
         gap: 0.75rem;
         flex: 1;
       }
 
-      .task-code {
+      .task-code-pill {
+        font-size: 0.74rem;
         font-weight: 800;
-        font-size: 0.85rem;
-        color: var(--color-primary, #1b4332);
-        min-width: 28px;
+        color: #065f46;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        padding: 0.15rem 0.45rem;
+        border-radius: 6px;
+        min-width: 32px;
+        text-align: center;
+        flex-shrink: 0;
       }
 
-      .task-label {
-        font-size: 0.85rem;
+      .task-text-label {
+        font-size: 0.84rem;
         color: #334155;
-        line-height: 1.4;
+        line-height: 1.45;
       }
 
-      /* Custom Radio Options Cards */
-      .radio-options-group {
+      /* Segmented Toggle Control for TRUE / FALSE */
+      .segmented-toggle-control {
         display: flex;
-        gap: 0.5rem;
-        min-width: 200px;
+        align-items: center;
+        background: #f1f5f9;
+        padding: 0.25rem;
+        border-radius: 10px;
+        gap: 0.25rem;
+        min-width: 220px;
       }
 
-      .radio-card {
+      .toggle-option-item {
         flex: 1;
         position: relative;
       }
 
-      .radio-card input[type="radio"] {
+      .toggle-option-item input[type="radio"] {
         position: absolute;
         opacity: 0;
         width: 0;
         height: 0;
+        pointer-events: none;
       }
 
-      .radio-btn-label {
+      .toggle-label {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 0.35rem;
-        padding: 0.5rem;
-        font-size: 0.8rem;
+        padding: 0.45rem 0.75rem;
+        font-size: 0.78rem;
         font-weight: 700;
         border-radius: 8px;
-        border: 2px solid #cbd5e1;
         cursor: pointer;
-        background-color: #ffffff;
-        transition: all 0.2s ease;
+        color: #64748b;
+        background: transparent;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         user-select: none;
       }
 
-      /* Radio TRUE State */
-      .radio-card-true .radio-btn-label { border-color: #a7f3d0; color: #065f46; }
-      .radio-card-true input[type="radio"]:checked + .radio-btn-label {
-        background-color: #d1fae5;
-        border-color: #10b981;
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+      .toggle-label:hover {
+        color: #1e293b;
       }
 
-      /* Radio FALSE State */
-      .radio-card-false .radio-btn-label { border-color: #fca5a5; color: #991b1b; }
-      .radio-card-false input[type="radio"]:checked + .radio-btn-label {
-        background-color: #fee2e2;
-        border-color: #ef4444;
-        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+      /* Radio TRUE Checked State */
+      .toggle-true input[type="radio"]:checked + .toggle-label {
+        background: #ffffff;
+        color: #065f46;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 1px #a7f3d0;
       }
 
-      /* Dropzone Area */
-      .dropzone-area {
+      /* Radio FALSE Checked State */
+      .toggle-false input[type="radio"]:checked + .toggle-label {
+        background: #ffffff;
+        color: #be123c;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 1px #fecdd3;
+      }
+
+      /* Modern Dropzone Area */
+      .modern-dropzone {
         border: 2px dashed #cbd5e1;
-        border-radius: 10px;
-        padding: 1.5rem;
+        border-radius: 14px;
+        padding: 2rem 1.5rem;
         text-align: center;
-        background-color: #f8fafc;
+        background: #f8fafc;
         cursor: pointer;
-        transition: border-color 0.2s, background-color 0.2s;
+        outline: none;
+        transition: all 0.2s ease;
       }
 
-      .dropzone-area:hover, .dropzone-area.dragover {
-        border-color: var(--color-primary, #1b4332);
-        background-color: #f0fdf4;
+      .modern-dropzone:hover, .modern-dropzone.dragover, .modern-dropzone:focus {
+        border-color: #059669;
+        background: #f0fdf4;
+      }
+
+      .dropzone-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.65rem;
+      }
+
+      .dropzone-icon-circle {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #059669;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      }
+
+      .dropzone-primary-text {
+        margin: 0;
+        font-size: 0.86rem;
+        color: #334155;
+      }
+
+      .text-accent {
+        color: #059669;
+        font-weight: 600;
+        text-decoration: underline;
+      }
+
+      .dropzone-secondary-text {
+        margin: 0.2rem 0 0 0;
+        font-size: 0.74rem;
+        color: #94a3b8;
       }
 
       .file-input-hidden { display: none; }
 
-      .dropzone-icon { font-size: 2rem; }
-      .dropzone-text { margin: 0.5rem 0 0.2rem 0; font-size: 0.85rem; color: #334155; }
-      .dropzone-hint { margin: 0; font-size: 0.75rem; color: #94a3b8; }
+      /* Upload Processing Spinner */
+      .upload-processing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.65rem;
+        padding: 0.6rem 0.85rem;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        color: #065f46;
+        font-weight: 600;
+      }
 
-      /* Photo Grid Preview */
+      .processing-spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid #a7f3d0;
+        border-top-color: #065f46;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Photo Thumbnail Grid */
       .photo-preview-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+        gap: 0.85rem;
         margin-top: 1rem;
       }
 
       .photo-thumb-card {
         position: relative;
         width: 100%;
-        height: 90px;
-        border-radius: 8px;
+        height: 95px;
+        border-radius: 10px;
         overflow: hidden;
         border: 1px solid #e2e8f0;
+        background: #f1f5f9;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       }
 
       .photo-thumb-card img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.2s ease;
+      }
+
+      .photo-thumb-card:hover img {
+        transform: scale(1.04);
       }
 
       .photo-delete-btn {
         position: absolute;
-        top: 4px;
-        right: 4px;
-        background: rgba(239, 68, 68, 0.9);
+        top: 5px;
+        right: 5px;
+        background: rgba(15, 23, 42, 0.75);
         color: #ffffff;
         border: none;
         border-radius: 50%;
-        width: 22px;
-        height: 22px;
-        font-size: 0.75rem;
+        width: 24px;
+        height: 24px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: background 0.15s ease;
       }
 
-      /* Validation Alert & Buttons */
-      .form-actions-wrapper {
+      .photo-delete-btn:hover {
+        background: #e11d48;
+      }
+
+      /* Form Footer & Validation Banner */
+      .form-footer-actions {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        margin-top: 1rem;
+        gap: 1.25rem;
+        margin-top: 0.5rem;
       }
 
-      .validation-alert-box {
-        background-color: #fef3c7;
+      .validation-banner {
+        background: #fffbeb;
         border: 1px solid #fde68a;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        padding: 0.85rem 1.15rem;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.8rem;
+        gap: 0.75rem;
+        font-size: 0.82rem;
         color: #92400e;
-        font-weight: 600;
+        line-height: 1.4;
       }
 
-      .modal-incomplete-warning {
-        background-color: #fee2e2;
-        border: 1px solid #fca5a5;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
+      .banner-icon {
+        color: #d97706;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.8rem;
-        color: #991b1b;
-        font-weight: 600;
+        flex-shrink: 0;
       }
 
-      .action-buttons-group {
+      .actions-button-row {
         display: flex;
+        flex-direction: column;
         gap: 0.75rem;
       }
 
-      .btn {
+      @media (min-width: 640px) {
+        .actions-button-row {
+          flex-direction: row;
+        }
+      }
+
+      .btn-action {
         flex: 1;
-        padding: 0.85rem 1rem;
-        font-size: 0.9rem;
-        font-weight: 700;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
+        padding: 0.85rem 1.25rem;
+        font-size: 0.88rem;
+        font-weight: 700;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
-      .btn-primary {
-        background-color: var(--color-primary, #1b4332);
+      .btn-secondary-preview {
+        background: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+      }
+      .btn-secondary-preview:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
+      }
+
+      .btn-primary-submit {
+        background: #065f46;
         color: #ffffff;
+        box-shadow: 0 2px 4px rgba(6, 95, 70, 0.15);
       }
-
-      .btn-primary:hover:not(:disabled) {
-        background-color: #143225;
+      .btn-primary-submit:hover:not(:disabled) {
+        background: #044e39;
+        box-shadow: 0 4px 8px rgba(6, 95, 70, 0.25);
       }
-
-      .btn-primary:disabled {
-        background-color: #cbd5e1;
+      .btn-primary-submit:disabled {
+        background: #cbd5e1;
         color: #94a3b8;
         cursor: not-allowed;
+        box-shadow: none;
       }
 
-      .btn-secondary {
-        background-color: #ffffff;
-        border: 1px solid #cbd5e1;
-        color: #334155;
-      }
-
-      .btn-secondary:hover { background-color: #f1f5f9; }
-
-      /* Modal Style */
-      .modal-overlay {
+      /* Modal Backdrop & Dialog */
+      .modal-backdrop {
         position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background-color: rgba(15, 23, 42, 0.5);
-        backdrop-filter: blur(3px);
-        z-index: 200;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 999;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 1rem;
         opacity: 0;
         visibility: hidden;
-        transition: all 0.25s ease;
+        transition: all 0.2s ease;
       }
 
-      .modal-overlay.active { opacity: 1; visibility: visible; }
+      .modal-backdrop.active {
+        opacity: 1;
+        visibility: visible;
+      }
 
-      .modal-card {
-        background-color: #ffffff;
-        border-radius: 12px;
+      .modal-dialog-card {
+        background: #ffffff;
+        border-radius: 16px;
         width: 100%;
-        max-width: 600px;
+        max-width: 620px;
         max-height: 90vh;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
         overflow: hidden;
       }
 
-      .modal-header {
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid #e2e8f0;
+      .modal-dialog-header {
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
+        padding: 1.15rem 1.5rem;
+        background: #fafafa;
+        border-bottom: 1px solid #f1f5f9;
       }
 
-      .modal-title { margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--color-primary, #1b4332); }
-      .modal-close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; }
+      .modal-header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+      }
 
-      .modal-body {
-        padding: 1.25rem;
+      .modal-icon-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #ecfdf5;
+        color: #065f46;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-heading {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .modal-close-button {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.15s ease;
+      }
+
+      .modal-close-button:hover {
+        color: #0f172a;
+      }
+
+      .modal-dialog-body {
+        padding: 1.5rem;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.25rem;
         font-size: 0.85rem;
       }
 
-      .modal-footer {
-        padding: 1rem 1.25rem;
-        border-top: 1px solid #e2e8f0;
+      .modal-dialog-footer {
         display: flex;
+        align-items: center;
+        justify-content: flex-end;
         gap: 0.75rem;
-        background-color: #f8fafc;
+        padding: 1rem 1.5rem;
+        background: #fafafa;
+        border-top: 1px solid #f1f5f9;
       }
 
-      .preview-section-title {
+      .modal-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.65rem 1.15rem;
+        font-size: 0.84rem;
         font-weight: 700;
-        color: var(--color-primary, #1b4332);
-        margin-bottom: 0.35rem;
-        border-bottom: 1px solid #e2e8f0;
-        padding-bottom: 0.2rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
       }
 
-      .preview-list { padding-left: 1.2rem; margin: 0.3rem 0; }
-      .preview-list li { margin-bottom: 0.25rem; }
+      .modal-btn-secondary {
+        background: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+      }
+      .modal-btn-secondary:hover {
+        background: #f1f5f9;
+      }
+
+      .modal-btn-primary {
+        background: #065f46;
+        color: #ffffff;
+      }
+      .modal-btn-primary:hover:not(:disabled) {
+        background: #044e39;
+      }
+      .modal-btn-primary:disabled {
+        background: #cbd5e1;
+        color: #94a3b8;
+        cursor: not-allowed;
+      }
+
+      /* Modal Custom Content */
+      .modal-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.85rem;
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+      }
+
+      .preview-stat-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      .preview-stat-label {
+        font-size: 0.72rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .preview-stat-value {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .preview-alert-list {
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        border-radius: 10px;
+        padding: 0.85rem 1.15rem;
+      }
+
+      .preview-alert-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #be123c;
+        margin-bottom: 0.4rem;
+      }
+
+      .preview-alert-items {
+        padding-left: 1.25rem;
+        margin: 0;
+        color: #9f1239;
+        font-size: 0.78rem;
+        line-height: 1.5;
+      }
+
+      .preview-success-callout {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 10px;
+        padding: 0.85rem 1.15rem;
+        color: #065f46;
+        font-size: 0.82rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
     </style>
   `;
 
@@ -885,33 +1380,41 @@ export function render(container) {
 }
 
 /**
- * Membangun Markup HTML untuk 5 Kategori Tugas
+ * Membangun Markup HTML untuk 5 Kategori Tugas Checklist
  */
 function renderCategoriesMarkup() {
   return CHECKLIST_CATEGORIES.map(category => `
-    <div class="category-block">
-      <div class="category-header">
-        <span>${category.icon}</span>
-        <span>${category.title}</span>
+    <div class="category-card">
+      <div class="category-header-bar">
+        <div class="category-brand">
+          <div class="category-icon-box">
+            ${category.iconSvg}
+          </div>
+          <span class="category-name">${category.title}</span>
+        </div>
+        <span class="category-badge-pill">${category.items.length} Poin Indikator</span>
       </div>
-      <div class="task-list">
+
+      <div class="category-tasks-list">
         ${category.items.map(task => `
-          <div class="task-item-row">
-            <div class="task-info">
-              <span class="task-code">${task.code}</span>
-              <span class="task-label">${task.label}</span>
+          <div class="task-row">
+            <div class="task-content-group">
+              <span class="task-code-pill">${task.code}</span>
+              <span class="task-text-label">${task.label}</span>
             </div>
-            <div class="radio-options-group">
-              <div class="radio-card radio-card-true">
+
+            <div class="segmented-toggle-control" role="radiogroup" aria-label="Status tugas ${task.code}">
+              <div class="toggle-option-item toggle-true">
                 <input type="radio" id="${task.id}_true" name="${task.id}" value="TRUE">
-                <label for="${task.id}_true" class="radio-btn-label">
-                  <span>✓</span> TRUE
+                <label for="${task.id}_true" class="toggle-label">
+                  <span class="btn-icon-svg">${ICONS.check}</span> TRUE
                 </label>
               </div>
-              <div class="radio-card radio-card-false">
+
+              <div class="toggle-option-item toggle-false">
                 <input type="radio" id="${task.id}_false" name="${task.id}" value="FALSE">
-                <label for="${task.id}_false" class="radio-btn-label">
-                  <span>✕</span> FALSE
+                <label for="${task.id}_false" class="toggle-label">
+                  <span class="btn-icon-svg">${ICONS.x}</span> FALSE
                 </label>
               </div>
             </div>
@@ -971,29 +1474,29 @@ function initFormLogic(container) {
     const progressFill = container.querySelector('#progressFill');
     const completionText = container.querySelector('#completionText');
     if (progressFill) progressFill.style.width = `${progressPercent}%`;
-    if (completionText) completionText.textContent = `${answeredCount} dari 13 Tugas Terisi`;
+    if (completionText) completionText.textContent = `${answeredCount} / 13`;
 
-    // 2. Hitung Persentase Skor Capaian
+    // 2. Hitung Persentase Skor Capaian Kepatuhan
     const scorePercent = Math.round((trueCount / 13) * 100);
     const scorePercentageElem = container.querySelector('#scorePercentage');
     if (scorePercentageElem) scorePercentageElem.textContent = `${scorePercent}%`;
 
-    // 3. Update Badge Status
+    // 3. Update Badge Status Kepatuhan
     const statusBadge = container.querySelector('#statusBadge');
     if (statusBadge) {
-      statusBadge.className = 'status-badge';
+      statusBadge.className = 'hud-badge';
       if (answeredCount < 13) {
         statusBadge.textContent = 'Belum Lengkap';
-        statusBadge.classList.add('badge-gray');
+        statusBadge.classList.add('badge-neutral');
       } else if (scorePercent >= 90) {
         statusBadge.textContent = 'Sangat Baik';
-        statusBadge.classList.add('badge-green');
+        statusBadge.classList.add('badge-success');
       } else if (scorePercent >= 75) {
         statusBadge.textContent = 'Baik';
-        statusBadge.classList.add('badge-blue');
+        statusBadge.classList.add('badge-info');
       } else {
         statusBadge.textContent = 'Perlu Evaluasi';
-        statusBadge.classList.add('badge-yellow');
+        statusBadge.classList.add('badge-warning');
       }
     }
 
@@ -1025,7 +1528,7 @@ function initFormLogic(container) {
     const input = form.querySelector(`#${id}`);
     if (input) {
       input.addEventListener('input', () => {
-        const parent = input.closest('.form-group');
+        const parent = input.closest('.form-field-group');
         if (input.value.trim()) {
           if (parent) parent.classList.remove('has-error');
         }
@@ -1073,6 +1576,12 @@ function initFormLogic(container) {
   // E. LOGIKA DRAG & DROP FOTO DROPZONE + KOMPRESI GAMBAR (imageCompressor.js)
   if (dropzone && fileInput) {
     dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
 
     ['dragenter', 'dragover'].forEach(eventName => {
       dropzone.addEventListener(eventName, (e) => {
@@ -1101,7 +1610,7 @@ function initFormLogic(container) {
 
   /**
    * Mengolah file yang diunggah, mengompresinya secara asinkron, dan menyimpannya ke uploadedPhotos
-   * @param {File[]} files 
+   * @param {File[]} files
    */
   async function handlePhotoUploads(files) {
     const validFiles = files.filter(file => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type));
@@ -1113,7 +1622,7 @@ function initFormLogic(container) {
       return;
     }
 
-    if (uploadStatusText) uploadStatusText.style.display = 'block';
+    if (uploadStatusText) uploadStatusText.style.display = 'flex';
 
     for (const rawFile of validFiles) {
       try {
@@ -1134,7 +1643,7 @@ function initFormLogic(container) {
           src: base64Src
         });
       } catch (err) {
-        console.error('❌ Gagal mengompresi foto:', err);
+        console.error('Gagal mengompresi foto:', err);
         alert(`Gagal memproses berkas foto "${rawFile.name}": ${err.message}`);
       }
     }
@@ -1149,7 +1658,9 @@ function initFormLogic(container) {
     photoPreviewGrid.innerHTML = uploadedPhotos.map((photo, index) => `
       <div class="photo-thumb-card">
         <img src="${photo.src}" alt="Pratinjau Foto ${index + 1}">
-        <button type="button" class="photo-delete-btn" data-index="${index}" title="Hapus foto">✕</button>
+        <button type="button" class="photo-delete-btn" data-index="${index}" title="Hapus foto" aria-label="Hapus foto ${index + 1}">
+          ${ICONS.x}
+        </button>
       </div>
     `).join('');
 
@@ -1178,6 +1689,13 @@ function initFormLogic(container) {
 
   if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
   if (btnBackEdit) btnBackEdit.addEventListener('click', closeModal);
+
+  // Close modal on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && previewModal && previewModal.classList.contains('active')) {
+      closeModal();
+    }
+  });
 
   function generateQuickPreviewData() {
     const guru = form.querySelector('#guruPiket').value || '-';
@@ -1219,48 +1737,72 @@ function initFormLogic(container) {
 
     modalPreviewBody.innerHTML = `
       ${!isFullyValid ? `
-        <div class="modal-incomplete-warning">
-          <span>⚠️</span>
-          <span><strong>Form Belum Lengkap:</strong> Isilah seluruh data petugas dan 13 poin checklist untuk mengaktifkan tombol simpan.</span>
+        <div class="validation-banner" style="background: #fff1f2; border-color: #fecdd3; color: #9f1239;">
+          <span class="banner-icon" style="color: #e11d48;">${ICONS.alertTriangle}</span>
+          <div><strong>Formulir Belum Lengkap:</strong> Lengkapi data petugas dan 13 poin checklist untuk mengaktifkan tombol konfirmasi simpan.</div>
         </div>
       ` : ''}
 
-      <div>
-        <div class="preview-section-title">📌 Informasi Header</div>
-        <p><strong>Guru Piket:</strong> ${guru}</p>
-        <p><strong>Tanggal:</strong> ${tanggal}</p>
-        <p><strong>Tim Petugas:</strong> ${p1}, ${p2}, ${p3}</p>
+      <div class="modal-preview-grid">
+        <div class="preview-stat-card">
+          <span class="preview-stat-label">Guru Piket</span>
+          <span class="preview-stat-value">${guru}</span>
+        </div>
+        <div class="preview-stat-card">
+          <span class="preview-stat-label">Tanggal Pelaksanaan</span>
+          <span class="preview-stat-value">${tanggal}</span>
+        </div>
+        <div class="preview-stat-card" style="grid-column: span 2;">
+          <span class="preview-stat-label">Tim Petugas Piket</span>
+          <span class="preview-stat-value">${p1}, ${p2}, ${p3}</span>
+        </div>
       </div>
 
-      <div>
-        <div class="preview-section-title">📊 Statistik Capaian</div>
-        <p><strong>Status Kelengkapan:</strong> ${answeredCount} dari 13 Checklist Terisi</p>
-        <p><strong>Jumlah Tugas Dikerjakan (TRUE):</strong> ${trueTasks.length} / 13</p>
-        <p><strong>Jumlah Tugas Tidak Dikerjakan (FALSE):</strong> ${falseTasks.length} / 13</p>
-        <p><strong>Skor Kepatuhan:</strong> ${score}%</p>
+      <div class="modal-preview-grid">
+        <div class="preview-stat-card">
+          <span class="preview-stat-label">Kelengkapan</span>
+          <span class="preview-stat-value">${answeredCount} / 13 Checklist</span>
+        </div>
+        <div class="preview-stat-card">
+          <span class="preview-stat-label">Skor Kepatuhan</span>
+          <span class="preview-stat-value" style="color: #065f46;">${score}%</span>
+        </div>
+        <div class="preview-stat-card">
+          <span class="preview-stat-label">Tugas Dikerjakan (TRUE)</span>
+          <span class="preview-stat-value" style="color: #15803d;">${trueTasks.length} Poin</span>
+        </div>
+        <div class="preview-stat-card">
+          <span class="preview-stat-label">Tugas Terlewat (FALSE)</span>
+          <span class="preview-stat-value" style="color: #be123c;">${falseTasks.length} Poin</span>
+        </div>
       </div>
 
       ${falseTasks.length > 0 ? `
-        <div>
-          <div class="preview-section-title" style="color: #dc2626;">⚠️ Daftar Poin Berstatus FALSE</div>
-          <ul class="preview-list" style="color: #dc2626;">
+        <div class="preview-alert-list">
+          <div class="preview-alert-title">Daftar Poin Berstatus FALSE (${falseTasks.length}):</div>
+          <ul class="preview-alert-items">
             ${falseTasks.map(item => `<li>${item}</li>`).join('')}
           </ul>
         </div>
       ` : (answeredCount === 13 ? `
-        <div style="color: #065f46; font-weight: 600;">
-          🎉 Luar biasa! Seluruh 13 poin tugas berstatus TRUE (Dikerjakan).
+        <div class="preview-success-callout">
+          ${ICONS.checkCircle}
+          <span>Seluruh 13 indikator tugas berstatus TRUE (Dikerjakan). Mutu kepatuhan 100%.</span>
         </div>
       ` : '')}
 
-      <div>
-        <div class="preview-section-title">📝 Catatan Evaluasi Narasi</div>
-        <p style="white-space: pre-line;">${catatan}</p>
+      <div class="form-field-group">
+        <span class="field-label">Catatan & Evaluasi Lapangan</span>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.82rem; color: #334155; line-height: 1.5; white-space: pre-line;">
+          ${catatan}
+        </div>
       </div>
 
-      <div>
-        <div class="preview-section-title">🖼️ Lampiran Dokumentasi</div>
-        <p>${uploadedPhotos.length} Foto terkompresi diunggah.</p>
+      <div class="form-field-group">
+        <span class="field-label">Lampiran Foto Dokumentasi</span>
+        <div style="font-size: 0.82rem; color: #64748b;">
+          ${uploadedPhotos.length > 0 ? `${uploadedPhotos.length} foto terkompresi siap disimpan ke database.` : 'Tidak ada foto dokumentasi yang dilampirkan.'}
+        </div>
       </div>
     `;
   }
@@ -1311,16 +1853,14 @@ function initFormLogic(container) {
 
     closeModal();
 
-    // Menonaktifkan tombol submit selama transaksi penyimpanan berlangsung
+    // Disable tombol submit selama transaksi penyimpanan
     if (btnSubmitForm) {
       btnSubmitForm.disabled = true;
-      btnSubmitForm.textContent = '⏳ Menyimpan ke Database...';
+      btnSubmitForm.innerHTML = `<span class="btn-icon">${ICONS.loader || ''}</span><span>Menyimpan ke Database...</span>`;
     }
 
     try {
       const scorePercent = Math.round((trueCount / 13) * 100);
-
-      // Mengambil daftar string Base64 dari foto yang telah terkompresi
       const photoBase64Array = uploadedPhotos.map(item => item.src);
 
       // Membangun Objek Data Laporan Utuh
@@ -1346,7 +1886,7 @@ function initFormLogic(container) {
       // Simpan ke IndexedDB Object Store 'dss_records' via storage.js
       await saveItem('dss_records', reportData);
 
-      alert('✅ Laporan Kebersihan & Preservasi Lingkungan berhasil disimpan ke Database IndexedDB!');
+      alert('Laporan Kebersihan & Preservasi Lingkungan berhasil disimpan ke Database!');
 
       // Navigasi ke Tampilan Cek Data (data.js) via SPA Router
       const cekDataBtn = document.querySelector('.spa-nav-btn[data-view="data"]');
@@ -1354,12 +1894,12 @@ function initFormLogic(container) {
         cekDataBtn.click();
       }
     } catch (error) {
-      console.error('❌ Error penyimpanan ke IndexedDB:', error);
+      console.error('Error penyimpanan ke IndexedDB:', error);
       alert(`Gagal menyimpan laporan ke database: ${error.message}`);
     } finally {
       if (btnSubmitForm) {
         btnSubmitForm.disabled = false;
-        btnSubmitForm.textContent = '💾 Simpan Laporan Data';
+        btnSubmitForm.innerHTML = `<span class="btn-icon">${ICONS.save}</span><span>Simpan Laporan Data</span>`;
       }
     }
   }
