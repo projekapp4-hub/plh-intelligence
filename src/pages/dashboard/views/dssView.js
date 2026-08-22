@@ -1,12 +1,12 @@
 /**
- * DSSVIEW.JS - Modul Sistem Pendukung Keputusan (DSS) Adiwiyata Modern
+ * DSSVIEW.JS - Modul Sistem Pendukung Keputusan (DSS) Agregat 30 Hari via Gemini AI
  * Path: src/pages/dashboard/views/dssView.js
  *
  * Standar UI/UX Pro Max:
  * - Zero Emoji UI (100% Crisp Semantics SVG Icons)
  * - Executive Bento Grid & KPI Summary Strip
  * - Shimmer Skeleton Loader (Mencegah Layout Shift)
- * - Local Heuristic Decision Engine (Fallback Cerdas jika Gemini Offline/Kunci Tidak Valid)
+ * - Error Banner Ramah Pengguna Awam jika Gemini AI tidak dapat diakses
  * - Copy to Clipboard & Toast Action
  * - Tokenized CSS & Mobile-First High Contrast Design
  */
@@ -22,155 +22,24 @@ const CACHE_KEY_DSS = 'dss_latest_analysis_v2';
 // ============================================================================
 const ICONS = {
   brain: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M12 18v4"/></svg>`,
-  sparkles: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>`,
+  sparkles: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3 1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>`,
   refresh: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>`,
   target: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="6" r="6"/><circle cx="12" cy="2" r="2"/></svg>`,
   checkCircle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
-  alertTriangle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+  alertTriangle: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
   shieldCheck: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>`,
   mapPin: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`,
   copy: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`,
   check: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
   fileText: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>`,
   activity: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
-  layers: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
-  clock: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
   info: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
-  loader: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dss-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`
+  key: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>`,
+  wifiOff: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>`
 };
 
 // ============================================================================
-// 2. HELPER LOCAL HEURISTIC DSS ENGINE (DETERMINISTIC FALLBACK)
-// ============================================================================
-const CHECKLIST_METADATA = {
-  task_1_1: { name: "Pembersihan Toilet & Wastafel", area: "Zona Sanitasi Lantai 1 & 2" },
-  task_1_2: { name: "Ketersediaan Sabun & Air Bersih", area: "Kamar Mandi & Wastafel" },
-  task_1_3: { name: "Drainase & Bebas Genangan Air", area: "Saluran Air Luar & Taman" },
-  task_2_1: { name: "Pemilahan Sampah Organik/Anorganik", area: "Seluruh Koridor & Kelas" },
-  task_2_2: { name: "Pengosongan Tempat Sampah Kelas", area: "Area Ruang Kelas" },
-  task_2_3: { name: "Pengolahan Komposter & Fermentasi", area: "Rumah Kompos Adiwiyata" },
-  task_2_4: { name: "Pencatatan Penimbangan Bank Sampah", area: "Unit Pengelolaan Sampah" },
-  task_3_1: { name: "Perawatan Tanaman & Penghijauan", area: "Taman Depan & Green House" },
-  task_3_2: { name: "Kebersihan Taman & Halaman", area: "Halaman Utama & Lapangan" },
-  task_3_3: { name: "Pemangkasan Daun Kering", area: "Kawasan Koridor Hijau" },
-  task_4_1: { name: "Penghematan Energi (Lampu/Kipas)", area: "Seluruh Gedung Sekolah" },
-  task_5_1: { name: "Pemeliharaan Sarana Kantin Sehat", area: "Area Kantin Sekolah" },
-  task_5_2: { name: "Kebersihan Saluran Pembuangan Kantin", area: "Instalasi Pengolahan Kantin" }
-};
-
-/**
- * Menghasilkan analisis deterministik berkualitas tinggi jika koneksi AI terputus/offline
- * @param {Array<Object>} records - Kumpulan data 30 hari terakhir dari IndexedDB
- */
-function generateHeuristicAnalysis(records) {
-  const total = records.length;
-  if (total === 0) {
-    return {
-      narrativeSummary: "Belum ada rekod evaluasi piket yang tercatat dalam 30 hari terakhir. Silakan lakukan input data piket untuk mengaktifkan pemantauan DSS.",
-      priorityPoints: [],
-      totalAnalyzed: 0,
-      avgScore: 0,
-      readinessLevel: "Belum Terverifikasi",
-      criticalCount: 0,
-      source: "Engine Heuristik Lokal",
-      updatedAt: new Date().toISOString()
-    };
-  }
-
-  // Hitung tingkat kepatuhan per-poin tugas
-  const taskStats = {};
-  Object.keys(CHECKLIST_METADATA).forEach(key => {
-    taskStats[key] = { trueCount: 0, totalCount: 0 };
-  });
-
-  let totalScoreSum = 0;
-
-  records.forEach(rec => {
-    totalScoreSum += Number(rec.scorePercent) || 0;
-    if (rec.checklist) {
-      Object.keys(CHECKLIST_METADATA).forEach(key => {
-        const val = String(rec.checklist[key]).toUpperCase();
-        if (val === 'TRUE' || val === '1' || val === 'YA') {
-          taskStats[key].trueCount += 1;
-        }
-        taskStats[key].totalCount += 1;
-      });
-    }
-  });
-
-  const avgScore = Math.round((totalScoreSum / total) * 10) / 10;
-
-  // Sortir item dengan tingkat kegagalan tertinggi
-  const taskRates = Object.keys(taskStats).map(key => {
-    const totalItem = taskStats[key].totalCount || total;
-    const rate = Math.round((taskStats[key].trueCount / totalItem) * 100);
-    return {
-      key,
-      rate,
-      ...CHECKLIST_METADATA[key]
-    };
-  }).sort((a, b) => a.rate - b.rate);
-
-  // Klasifikasi Kesiapan Adiwiyata
-  let readinessLevel = "Sangat Mandiri (Adiwiyata Nasional)";
-  if (avgScore < 75) readinessLevel = "Perlu Intervensi Ketat";
-  else if (avgScore < 85) readinessLevel = "Cukup Siap (Adiwiyata Kota/Kab)";
-  else if (avgScore < 92) readinessLevel = "Siap Optimal (Adiwiyata Provinsi)";
-
-  const worstTasks = taskRates.slice(0, 4);
-  const criticalCount = worstTasks.filter(t => t.rate < 90).length;
-
-  // Bangun Narasi Eksekutif
-  const narrative = `Berdasarkan sintesis agregat terhadap ${total} rekod evaluasi berkala selama 30 hari terakhir, operasional piket lingkungan sekolah mencatatkan tingkat kepatuhan rata-rata sebesar ${avgScore}%. Indeks performa lingkungan secara umum berada pada status '${readinessLevel}'.
-
-Aspek sanitasi, kebersihan ruang kelas, dan kepatuhan penghematan energi menunjukkan konsistensi tinggi di atas 90%. Namun demikian, audit data mengidentifikasi beberapa titik kendala yang memerlukan atensi terarah:
-1. ${worstTasks[0].name} di ${worstTasks[0].area} dengan tingkat kepatuhan ${worstTasks[0].rate}%.
-2. ${worstTasks[1].name} di ${worstTasks[1].area} dengan rasio realisasi ${worstTasks[1].rate}%.
-
-Diperlukan penguatan jadwal rotasi tim piket santri dan pengawasan harian guru piket pada titik-titik krusial tersebut guna menjamin kepatuhan baku mutu lingkungan Adiwiyata.`;
-
-  // Poin-poin prioritas taktis
-  const priorityPoints = [
-    {
-      title: `Optimasi ${worstTasks[0].name}`,
-      targetArea: worstTasks[0].area,
-      urgency: worstTasks[0].rate < 85 ? "TINGGI" : "SEDANG",
-      action: `Lakukan inspeksi harian terjadwal dan penyediaan instrumen pendukung khusus pada ${worstTasks[0].area} untuk menaikkan kepatuhan dari ${worstTasks[0].rate}% ke target minimum 95%.`
-    },
-    {
-      title: `Percepatan ${worstTasks[1].name}`,
-      targetArea: worstTasks[1].area,
-      urgency: worstTasks[1].rate < 90 ? "SEDANG" : "KELANJUTAN",
-      action: `Kordinasikan penugasan regu piket dengan koordinator zona untuk memastikan standardisasi operasional pada ${worstTasks[1].name} berjalan tanpa jeda.`
-    },
-    {
-      title: "Standardisasi Pemilahan & Manajemen Bank Sampah",
-      targetArea: "Unit Bank Sampah & TPS Terpadu",
-      urgency: "SEDANG",
-      action: "Tingkatkan intensitas penimbangan berkala dan pengawasan residu anorganik pada saat jam istirahat sekolah."
-    },
-    {
-      title: "Pemeliharaan Preventif Saluran Air & Drainase",
-      targetArea: "Kawasan Perimeter Luar & Kantin",
-      urgency: "KELANJUTAN",
-      action: "Lakukan pengecekan rutin jaring filter limbah air sebelum dan sesudah aktivitas memasak di kantin guna mencegah sumbatan sedimen."
-    }
-  ];
-
-  return {
-    narrativeSummary: narrative,
-    priorityPoints,
-    totalAnalyzed: total,
-    avgScore,
-    readinessLevel,
-    criticalCount,
-    source: "Engine Heuristik Lokal",
-    updatedAt: new Date().toISOString()
-  };
-}
-
-// ============================================================================
-// 3. FUNGSI UTAMA RENDER SPA VIEW
+// 2. FUNGSI UTAMA RENDER SPA VIEW
 // ============================================================================
 export function render(container) {
   container.innerHTML = `
@@ -180,23 +49,23 @@ export function render(container) {
       <header class="dss-hero-card">
         <div class="dss-hero-left">
           <div class="dss-pill-badge">
-            <span class="dss-badge-icon">${ICONS.shieldCheck}</span>
-            <span>Sistem Pendukung Keputusan Adiwiyata</span>
+            <span class="dss-badge-icon">${ICONS.sparkles}</span>
+            <span>Kecerdasan Buatan (AI) Adiwiyata</span>
           </div>
           <h1 class="dss-hero-title">Wawasan Strategis & Saran Keputusan</h1>
           <p class="dss-hero-desc">
-            Sintesis data komprehensif 30 hari terakhir untuk evaluasi kepatuhan lingkungan, identifikasi anomali, dan rekomendasi tindakan presisi.
+            Sintesis agregat data evaluasi 30 hari terakhir untuk evaluasi kepatuhan lingkungan dan rekomendasi tindakan taktis via Google Gemini AI.
           </p>
         </div>
 
         <div class="dss-hero-actions">
-          <button type="button" id="btnCopyReport" class="dss-btn dss-btn-secondary" title="Salin ringkasan ke clipboard">
+          <button type="button" id="btnCopyReport" class="dss-btn dss-btn-secondary" title="Salin ringkasan ke clipboard" style="display: none;">
             <span class="btn-icon" id="copyIcon">${ICONS.copy}</span>
             <span id="copyBtnText">Salin Analisis</span>
           </button>
           <button type="button" id="btnAnalyze" class="dss-btn dss-btn-primary">
             <span class="btn-icon" id="analyzeIcon">${ICONS.refresh}</span>
-            <span>Analisis Ulang</span>
+            <span>Analisis Ulang AI</span>
           </button>
         </div>
       </header>
@@ -208,7 +77,7 @@ export function render(container) {
 
       <!-- MAIN RESULTS CONTAINER -->
       <main id="dssResultsContainer" class="dss-content-grid" aria-live="polite">
-        <!-- Skeleton or Real Content -->
+        <!-- Skeleton, Error, or Real Content -->
       </main>
 
       <!-- TOAST NOTIFICATION CONTAINER -->
@@ -334,6 +203,12 @@ export function render(container) {
         box-shadow: 0 4px 10px rgba(44, 94, 59, 0.2);
       }
 
+      .dss-btn-primary:disabled {
+        background-color: #94a3b8;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
       .dss-btn-secondary {
         background-color: #ffffff;
         color: var(--color-text-main, #142418);
@@ -452,23 +327,12 @@ export function render(container) {
         font-weight: 700;
         padding: 0.25rem 0.55rem;
         border-radius: 6px;
-        background-color: #f1f5f9;
-        color: #475569;
         display: inline-flex;
         align-items: center;
         gap: 0.35rem;
-      }
-
-      .dss-engine-tag.gemini {
         background-color: #eff6ff;
         color: #1d4ed8;
         border: 1px solid #bfdbfe;
-      }
-
-      .dss-engine-tag.heuristic {
-        background-color: #f0fdf4;
-        color: #166534;
-        border: 1px solid #bbf7d0;
       }
 
       /* NARRATIVE SECTION */
@@ -591,6 +455,80 @@ export function render(container) {
         line-height: 1.55;
       }
 
+      /* USER-FRIENDLY ERROR STATE CARD */
+      .dss-error-card {
+        grid-column: 1 / -1;
+        background: #ffffff;
+        border: 1px solid #fee2e2;
+        border-top: 4px solid #ef4444;
+        border-radius: var(--radius-lg, 16px);
+        padding: 2.25rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.05);
+      }
+
+      .dss-error-icon-box {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        background-color: #fef2f2;
+        color: #dc2626;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        border: 1px solid #fecdd3;
+      }
+
+      .dss-error-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #991b1b;
+        margin: 0 0 0.5rem 0;
+      }
+
+      .dss-error-message {
+        font-size: 0.92rem;
+        color: #475569;
+        max-width: 580px;
+        line-height: 1.6;
+        margin: 0 0 1.25rem 0;
+      }
+
+      .dss-error-hint-box {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--radius-md, 10px);
+        padding: 1rem 1.25rem;
+        text-align: left;
+        max-width: 580px;
+        width: 100%;
+        margin-bottom: 1.5rem;
+      }
+
+      .dss-error-hint-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #334155;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin-bottom: 0.4rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .dss-error-hint-list {
+        margin: 0;
+        padding-left: 1.2rem;
+        font-size: 0.84rem;
+        color: #64748b;
+        line-height: 1.55;
+      }
+
       /* SHIMMER SKELETON LOADER */
       .skeleton-box {
         background: linear-gradient(90deg, #f0f3f1 25%, #e6ece8 50%, #f0f3f1 75%);
@@ -646,7 +584,7 @@ export function render(container) {
 }
 
 // ============================================================================
-// 4. LOGIKA INTEGRASI DATA, CACHE & AI + HEURISTIC ENGINE
+// 3. LOGIKA INTEGRASI DATA, CACHE & AI GEMINI
 // ============================================================================
 async function initDssLogic(container) {
   const btnAnalyze = container.querySelector('#btnAnalyze');
@@ -672,9 +610,12 @@ async function initDssLogic(container) {
   }
 
   /**
-   * Menampilkan Placeholder Skeleton Shimmer saat komputasi berlangsung
+   * Menampilkan Placeholder Skeleton Shimmer saat pengolahan AI berlangsung
    */
   function renderSkeleton() {
+    if (btnAnalyze) btnAnalyze.disabled = true;
+    if (btnCopyReport) btnCopyReport.style.display = 'none';
+
     // Skeleton KPI
     dssKpiStrip.innerHTML = Array(4).fill(0).map(() => `
       <div class="dss-kpi-card">
@@ -733,18 +674,84 @@ async function initDssLogic(container) {
   }
 
   /**
+   * Menampilkan pesan error yang jelas dan mudah dipahami oleh orang awam
+   */
+  function renderFriendlyError(rawError) {
+    if (btnAnalyze) btnAnalyze.disabled = false;
+    if (btnCopyReport) btnCopyReport.style.display = 'none';
+    dssKpiStrip.innerHTML = '';
+
+    const errStr = (rawError?.message || String(rawError)).toLowerCase();
+    let headline = 'Layanan AI Tidak Dapat Diakses';
+    let friendlyMessage = 'Sistem tidak dapat terhubung ke server Google Gemini AI untuk memproses saran keputusan saat ini.';
+    let hints = [
+      'Pastikan perangkat terhubung dengan jaringan internet yang stabil.',
+      'Periksa apakah Kunci Akses (API Key) telah terpasang dengan benar di konfigurasi sistem (.env).',
+      'Jika kuota harian telah habis, silakan coba kembali beberapa saat lagi.'
+    ];
+
+    if (errStr.includes('api key') || errStr.includes('vite_gemini_api_key') || errStr.includes('401') || errStr.includes('tidak ditemukan')) {
+      headline = 'Kunci Akses AI Belum Dikonfigurasi';
+      friendlyMessage = 'Fitur Analisis AI membutuhkan API Key Google Gemini yang valid agar dapat membaca data dan menyusun rekomendasi secara otomatis.';
+      hints = [
+        'Hubungi administrator sistem untuk memperbaiki galat.',
+        'Muat ulang halaman setelah konfigurasi kunci selesai diperbarui.'
+      ];
+    } else if (errStr.includes('kuota') || errStr.includes('quota') || errStr.includes('429') || errStr.includes('resource_exhausted')) {
+      headline = 'Batas Penggunaan AI Tercapai';
+      friendlyMessage = 'Permintaan analisis melebihi batas kuota harian gratis dari Google Gemini AI.';
+      hints = [
+        'Tunggu beberapa menit sebelum menekan tombol Analisis Ulang.',
+        'Sistem akan otomatis dapat digunakan kembali saat kuota disegarkan.'
+      ];
+    } else if (errStr.includes('internet') || errStr.includes('network') || errStr.includes('failed to fetch')) {
+      headline = 'Koneksi Internet Terputus';
+      friendlyMessage = 'Perangkat Anda gagal menghubungi server cloud AI. Periksa sambungan Wi-Fi atau data seluler Anda.';
+      hints = [
+        'Pastikan browser tidak dalam mode offline.',
+        'Coba refresh halaman atau ganti jaringan koneksi internet Anda.'
+      ];
+    }
+
+    dssResultsContainer.innerHTML = `
+      <div class="dss-error-card">
+        <div class="dss-error-icon-box">
+          ${ICONS.alertTriangle}
+        </div>
+        <h2 class="dss-error-title">${headline}</h2>
+        <p class="dss-error-message">${friendlyMessage}</p>
+
+        <div class="dss-error-hint-box">
+          <div class="dss-error-hint-title">
+            ${ICONS.info}
+            <span>Langkah yang Disarankan:</span>
+          </div>
+          <ul class="dss-error-hint-list">
+            ${hints.map(h => `<li>${h}</li>`).join('')}
+          </ul>
+        </div>
+
+        <button type="button" class="dss-btn dss-btn-primary" onclick="document.getElementById('btnAnalyze').click()">
+          <span class="btn-icon">${ICONS.refresh}</span>
+          <span>Coba Hubungkan Kembali</span>
+        </button>
+      </div>
+    `;
+  }
+
+  /**
    * Merender UI Hasil Lengkap (Bento Grid + KPI Cards)
    */
   function renderAnalysisUI(data) {
+    if (btnAnalyze) btnAnalyze.disabled = false;
     currentAnalysisData = data;
     if (!data) return;
 
+    if (btnCopyReport) btnCopyReport.style.display = 'inline-flex';
+
     const total = data.totalAnalyzed || 0;
     const avgScore = data.avgScore || 0;
-    const readiness = data.readinessLevel || (avgScore >= 90 ? 'Siap Optimal (Adiwiyata Provinsi)' : 'Perlu Pendampingan');
-    const isGemini = data.source && data.source.includes('Gemini');
-    const engineClass = isGemini ? 'gemini' : 'heuristic';
-    const engineText = isGemini ? 'Google Gemini AI' : 'Engine Heuristik Lokal';
+    const readiness = data.readinessLevel || (avgScore >= 90 ? 'Sangat Mandiri (Adiwiyata Nasional)' : 'Perlu Pendampingan');
 
     // 1. RENDER 4 KPI STATS
     dssKpiStrip.innerHTML = `
@@ -754,7 +761,7 @@ async function initDssLogic(container) {
           <span class="dss-kpi-icon">${ICONS.fileText}</span>
         </div>
         <div class="dss-kpi-val">${total}</div>
-        <div class="dss-kpi-sub">${ICONS.clock} 30 Hari Terakhir</div>
+        <div class="dss-kpi-sub">${ICONS.sparkles} 30 Hari Terakhir</div>
       </div>
 
       <div class="dss-kpi-card">
@@ -772,7 +779,7 @@ async function initDssLogic(container) {
           <span class="dss-kpi-icon">${ICONS.shieldCheck}</span>
         </div>
         <div class="dss-kpi-val" style="font-size: 1.15rem; line-height: 1.3; color: var(--color-primary, #2C5E3B);">${readiness}</div>
-        <div class="dss-kpi-sub">Kategori Tingkat Provinsi</div>
+        <div class="dss-kpi-sub">Kategori Tingkat Adiwiyata</div>
       </div>
 
       <div class="dss-kpi-card">
@@ -781,7 +788,7 @@ async function initDssLogic(container) {
           <span class="dss-kpi-icon">${ICONS.target}</span>
         </div>
         <div class="dss-kpi-val">${data.priorityPoints ? data.priorityPoints.length : 0}</div>
-        <div class="dss-kpi-sub">Rekomendasi Taktis</div>
+        <div class="dss-kpi-sub">Rekomendasi Taktis AI</div>
       </div>
     `;
 
@@ -794,11 +801,11 @@ async function initDssLogic(container) {
         <div class="dss-card-header">
           <h2 class="dss-card-title">
             <span>${ICONS.brain}</span>
-            <span>Diagnosis & Analisis Agregat</span>
+            <span>Diagnosis & Analisis Agregat AI</span>
           </h2>
-          <span class="dss-engine-tag ${engineClass}">
-            ${isGemini ? ICONS.sparkles : ICONS.layers}
-            ${engineText}
+          <span class="dss-engine-tag">
+            ${ICONS.sparkles}
+            Google Gemini AI
           </span>
         </div>
 
@@ -812,7 +819,7 @@ async function initDssLogic(container) {
             <span>Panduan Tindak Lanjut Koordinator</span>
           </div>
           <div class="dss-callout-desc">
-            Rekomendasi di samping telah diprioritaskan berdasarkan frekuensi anomali dan dampak kepatuhan baku mutu lingkungan sekolah. Kordinasikan dengan guru pembina zona harian.
+            Rekomendasi di samping telah diprioritaskan oleh AI berdasarkan pola kelemahan lapangan dan dampak kepatuhan baku mutu lingkungan sekolah. Kordinasikan dengan guru pembina zona harian.
           </div>
         </div>
       </section>
@@ -864,7 +871,7 @@ async function initDssLogic(container) {
   }
 
   /**
-   * Eksekusi Pipeline DSS (Cache -> Gemini AI -> Heuristic Fallback)
+   * Eksekusi Utama Pengiriman Data ke Gemini AI
    */
   async function runAiAnalysis(forceRefresh = false) {
     try {
@@ -883,13 +890,14 @@ async function initDssLogic(container) {
       const recentRecords = await getRecentRecords();
 
       if (!recentRecords || recentRecords.length === 0) {
+        if (btnAnalyze) btnAnalyze.disabled = false;
         dssKpiStrip.innerHTML = '';
         dssResultsContainer.innerHTML = `
           <div class="dss-card" style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem;">
             <div style="color: var(--color-secondary, #619170); margin-bottom: 0.75rem;">${ICONS.info}</div>
             <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.35rem;">Belum Ada Data Evaluasi</h3>
             <p style="font-size: 0.86rem; color: #64748b; max-width: 450px; margin: 0 auto 1.25rem auto;">
-              Belum ada rekod evaluasi piket tersimpan dalam 30 hari terakhir. Silakan isi form evaluasi atau gunakan data pengujian.
+              Belum ada rekod evaluasi piket tersimpan dalam 30 hari terakhir. Silakan isi form evaluasi atau gunakan data pengujian terlebih dahulu.
             </p>
           </div>
         `;
@@ -900,81 +908,85 @@ async function initDssLogic(container) {
       const totalScoreSum = recentRecords.reduce((acc, curr) => acc + (Number(curr.scorePercent) || 0), 0);
       const avgScore = Math.round((totalScoreSum / recentRecords.length) * 10) / 10;
 
-      // 3. Panggilan ke Gemini AI dengan Proteksi Fallback Otomatis
-      let finalResult = null;
+      // 3. Kemas payload data terstruktur untuk dikirim ke Gemini AI
+      const jsonPayload = {
+        metadata: {
+          periode: "30 Hari Terakhir",
+          totalEvaluasi: recentRecords.length,
+          rataRataKepatuhan: `${avgScore}%`,
+          tanggalAnalisis: new Date().toISOString().split('T')[0]
+        },
+        evaluasiSampel: recentRecords.slice(-15).map(r => ({
+          tanggal: r.tanggal || r.createdAt,
+          guruPiket: r.guruPiket,
+          skor: `${r.scorePercent}%`,
+          tugasTerlewati: r.falseCount || 0,
+          checklist: r.checklist || {},
+          catatanLapangan: r.catatan || '-'
+        }))
+      };
 
-      try {
-        const promptInstruction = `
-          Anda adalah pakar audit Sistem Pendukung Keputusan (DSS) Lingkungan Sekolah Adiwiyata Tingkat Provinsi.
-          Diberikan kumpulan data evaluasi zona/area sekolah selama 30 hari terakhir.
+      const promptInstruction = `
+        Anda adalah pakar audit Sistem Pendukung Keputusan (DSS) Lingkungan Sekolah Adiwiyata Tingkat Nasional.
+        Diberikan data agregat evaluasi kebersihan, sanitasi, pemilahan sampah, dan konservasi sekolah selama 30 hari terakhir.
 
-          Tugas Anda:
-          1. Lakukan ANALISIS AGREGAT menyeluruh terhadap data tersebut secara objektif dan profesional.
-          2. Tuliskan "narrativeSummary": Sintesis naratif mendalam (3-4 paragraf profesional) yang menjelaskan kondisi umum, aspek yang telah konsisten, titik kelemahan utama, dan arah perbaikan.
-          3. Buat "priorityPoints": 3 sampai 4 poin tindakan taktis dengan format title, targetArea, urgency (TINGGI/SEDANG/KELANJUTAN), dan action konkret.
-        `;
+        Tugas Anda:
+        1. Lakukan ANALISIS AGREGAT menyeluruh terhadap data operasional tersebut secara objektif, mendalam, dan profesional.
+        2. Tuliskan "narrativeSummary": Sintesis naratif mendalam (3-4 paragraf terstruktur) yang menjelaskan kondisi umum sekolah, tren positif, titik kelemahan utama, dan evaluasi kesiapan standar Adiwiyata.
+        3. Buat "priorityPoints": 3 sampai 4 poin tindakan taktis yang paling mendesak dengan format title, targetArea, urgency (TINGGI/SEDANG/KELANJUTAN), dan action konkret.
+      `;
 
-        const jsonSchema = {
-          type: "OBJECT",
-          description: "Hasil analisis agregat DSS Adiwiyata",
-          properties: {
-            narrativeSummary: { type: "STRING" },
-            priorityPoints: {
-              type: "ARRAY",
-              items: {
-                type: "OBJECT",
-                properties: {
-                  title: { type: "STRING" },
-                  targetArea: { type: "STRING" },
-                  urgency: { type: "STRING" },
-                  action: { type: "STRING" }
-                },
-                required: ["title", "urgency", "action"]
-              }
+      const jsonSchema = {
+        type: "OBJECT",
+        description: "Hasil analisis agregat DSS Adiwiyata",
+        properties: {
+          narrativeSummary: { type: "STRING" },
+          priorityPoints: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                title: { type: "STRING" },
+                targetArea: { type: "STRING" },
+                urgency: { type: "STRING" },
+                action: { type: "STRING" }
+              },
+              required: ["title", "urgency", "action"]
             }
-          },
-          required: ["narrativeSummary", "priorityPoints"]
-        };
+          }
+        },
+        required: ["narrativeSummary", "priorityPoints"]
+      };
 
-        const aiResponse = await analyzeJSON(recentRecords, promptInstruction, jsonSchema);
+      // 4. Kirim ke API Gemini melalui Service Layer
+      const aiResponse = await analyzeJSON(jsonPayload, promptInstruction, jsonSchema);
 
-        if (aiResponse && (aiResponse.narrativeSummary || aiResponse.priorityPoints)) {
-          finalResult = {
-            narrativeSummary: aiResponse.narrativeSummary || 'Analisis berhasil disintesis.',
-            priorityPoints: Array.isArray(aiResponse.priorityPoints) ? aiResponse.priorityPoints : [],
-            totalAnalyzed: recentRecords.length,
-            avgScore: avgScore,
-            readinessLevel: avgScore >= 90 ? 'Sangat Mandiri (Adiwiyata Provinsi)' : 'Perlu Peningkatan',
-            source: 'Google Gemini AI',
-            updatedAt: new Date().toISOString()
-          };
-        }
-      } catch (aiError) {
-        console.warn('[dssView.js] Gemini AI offline atau kunci belum dikonfigurasi. Mengaktifkan Engine Heuristik Lokal:', aiError);
+      if (!aiResponse || (!aiResponse.narrativeSummary && !aiResponse.priorityPoints)) {
+        throw new Error('Menerima format data kosong dari layanan AI Gemini.');
       }
 
-      // 4. Jika AI tidak merespons / gagal, gunakan Engine Heuristik Lokal
-      if (!finalResult) {
-        finalResult = generateHeuristicAnalysis(recentRecords);
-      }
+      const finalResult = {
+        narrativeSummary: aiResponse.narrativeSummary || 'Analisis berhasil disintesis oleh AI.',
+        priorityPoints: Array.isArray(aiResponse.priorityPoints) ? aiResponse.priorityPoints : [],
+        totalAnalyzed: recentRecords.length,
+        avgScore: avgScore,
+        readinessLevel: avgScore >= 90 ? 'Sangat Mandiri (Adiwiyata Nasional)' : 'Perlu Pendampingan',
+        source: 'Google Gemini AI',
+        updatedAt: new Date().toISOString()
+      };
 
-      // 5. Simpan ke Cache
+      // 5. Simpan Hasil ke Cache
       await saveItem('gemini_cache', {
         id: CACHE_KEY_DSS,
         data: finalResult
       });
 
-      // 6. Render UI
+      // 6. Render Hasil ke Tampilan UI
       renderAnalysisUI(finalResult);
 
-    } catch (globalError) {
-      console.error('[dssView.js] Kesalahan fatal saat merender DSS:', globalError);
-      dssResultsContainer.innerHTML = `
-        <div class="dss-card" style="grid-column: 1 / -1; border-left: 4px solid #dc2626; padding: 1.5rem;">
-          <div style="font-weight: 800; color: #991b1b; margin-bottom: 0.35rem;">Gagal Memproses Rekomendasi Keputusan</div>
-          <div style="font-size: 0.86rem; color: #475569;">${globalError.message || globalError}</div>
-        </div>
-      `;
+    } catch (error) {
+      console.error('[dssView.js] Kesalahan saat memanggil AI Gemini:', error);
+      renderFriendlyError(error);
     }
   }
 
@@ -985,8 +997,8 @@ async function initDssLogic(container) {
       const textToCopy = `=== RINGKASAN REKOMENDASI KEPUTUSAN (DSS) ADIWIYATA ===\n` +
         `Total Sampel: ${currentAnalysisData.totalAnalyzed || 0} Laporan (30 Hari)\n` +
         `Rata-rata Kepatuhan: ${currentAnalysisData.avgScore || 0}%\n` +
-        `Sumber Analisis: ${currentAnalysisData.source || '-'}\n\n` +
-        `--- DIAGNOSIS AGREGAT ---\n${currentAnalysisData.narrativeSummary || '-'}\n\n` +
+        `Sumber Analisis: ${currentAnalysisData.source || 'Google Gemini AI'}\n\n` +
+        `--- DIAGNOSIS AGREGAT AI ---\n${currentAnalysisData.narrativeSummary || '-'}\n\n` +
         `--- POIN PRIORITAS TINDAKAN ---\n` +
         (currentAnalysisData.priorityPoints || []).map((p, i) => `${i+1}. [${p.urgency}] ${p.title} (Area: ${p.targetArea || '-'})\n   Aksi: ${p.action}`).join('\n\n');
 

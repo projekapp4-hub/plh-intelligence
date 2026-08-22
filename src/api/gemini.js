@@ -34,8 +34,8 @@ const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY || '' });
 /**
  * Model Default yang digunakan dalam sistem PLH-INTELLIGENCE
  */
-const DEFAULT_MODEL_FAST = 'gemini-3.5-flash-lite';
-const DEFAULT_MODEL_PRO = 'gemini-3.1-flash-lite';
+const DEFAULT_MODEL_FAST = 'gemini-2.5-flash';
+const DEFAULT_MODEL_PRO = 'gemini-2.5-pro';
 
 /**
  * Menghasilkan analisis berbasis teks murni dari input prompt yang diberikan.
