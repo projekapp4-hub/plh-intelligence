@@ -91,6 +91,69 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /**
+   * Menjalankan animasi transisi melayang dan membesar (SVG Portal Transition)
+   * menuju ke halaman dashboard.html secara mulus.
+   */
+  function triggerPortalTransition() {
+    const portalOverlay = document.getElementById('transitionPortal');
+    const portalCircle = document.getElementById('portalCircle');
+    const body = document.body;
+
+    if (!portalOverlay || !portalCircle || !submitBtn) {
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    // 1. Ambil posisi viewport akurat (mendukung mobile viewport & dynamic scroll)
+    const btnRect = submitBtn.getBoundingClientRect();
+    const startX = btnRect.left + btnRect.width / 2;
+    const startY = btnRect.top + btnRect.height / 2;
+
+    // Viewport center yang presisi di semua perangkat (Desktop, Tablet, Mobile)
+    const viewportWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+    const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const centerX = viewportWidth / 2;
+    const centerY = viewportHeight / 2;
+
+    // Kunci scroll layar saat transisi agar tidak bergeser di smartphone
+    body.style.overflow = 'hidden';
+    submitBtn.style.opacity = '0';
+    body.classList.add('is-transitioning');
+    portalOverlay.classList.add('active');
+
+    // 2. Set posisi awal portal circle tepat di atas tombol submit menggunakan fixed positioning
+    portalCircle.style.position = 'fixed';
+    portalCircle.style.left = `${startX}px`;
+    portalCircle.style.top = `${startY}px`;
+    portalCircle.style.transform = `translate3d(-50%, -50%, 0) scale(0.6)`;
+    portalCircle.style.opacity = '1';
+
+    // 3. Fase Melayang ke Titik Tengah Layar (True Screen Center)
+    requestAnimationFrame(() => {
+      // Trigger reflow
+      void portalCircle.offsetWidth;
+
+      setTimeout(() => {
+        portalCircle.classList.add('floating-to-center');
+        const deltaX = centerX - startX;
+        const deltaY = centerY - startY;
+        portalCircle.style.transform = `translate3d(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px), 0) scale(1.25)`;
+
+        // 4. Fase Membesar Menyelimuti Seluruh Layar (Expanding Portal Overlay)
+        setTimeout(() => {
+          portalCircle.classList.add('expanding');
+          portalCircle.style.transform = `translate3d(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px), 0) scale(60)`;
+
+          // 5. Eksekusi Pengalihan Halaman ke Dashboard
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 450);
+        }, 550);
+      }, 30);
+    });
+  }
+
   // 4. Penanganan Event Submit Formulir Otentikasi
   if (loginForm) {
     loginForm.addEventListener('submit', async (event) => {
@@ -130,18 +193,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const authResponse = await loginUser(usernameValue, passwordValue, isRemembered);
 
         if (authResponse && authResponse.success) {
-          showAlert(authResponse.message || 'Login berhasil! Mengalihkan...', 'success');
-          
-          // Berikan jeda singkat (800ms) agar pesan sukses terlihat sebelum pengalihan rute
+          showAlert(authResponse.message || 'Login berhasil! Membuka Portal...', 'success');
+
+          // Jalankan animasi transisi melayang dan membesar
           setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 800);
+            triggerPortalTransition();
+          }, 350);
         } else {
           // Menampilkan pesan kesalahan resmi dari respons auth.js (misal: "Sandi atau Username Salah")
-          const errorMessage = authResponse && authResponse.message 
-            ? authResponse.message 
+          const errorMessage = authResponse && authResponse.message
+            ? authResponse.message
             : 'Kombinasi username atau kata sandi tidak sesuai.';
-          
+
           showAlert(errorMessage, 'danger');
           setLoadingState(false);
         }

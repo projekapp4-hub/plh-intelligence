@@ -463,3 +463,125 @@
   font-weight: 700;
   color: #14532d;
 }
+
+/* ==========================================================================
+   6. SEAMLESS PORTAL TRANSITION (Melayang, Membesar & Smooth Entry)
+   ========================================================================== */
+.login-card-container {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+}
+
+/* State ketika login sukses & transisi dimulai */
+.login-body.is-transitioning .login-card-container {
+  transform: scale(0.94) translateY(8px);
+  opacity: 0.15;
+  pointer-events: none;
+  filter: blur(2px);
+}
+
+.login-body.is-transitioning .login-header {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Wadah Portal Layang */
+.transition-portal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.transition-portal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Circle / Tombol Morphing yang Melayang */
+.portal-circle {
+  position: fixed;
+  width: 64px;
+  height: 64px;
+  margin: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5), 0 0 0 4px rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, border-radius;
+  transform-origin: center center;
+  transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-sizing: border-box;
+}
+
+/* Animasi Melayang ke Tengah */
+.portal-circle.floating-to-center {
+  transition: transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* Animasi Membesar Membuka Dashboard */
+.portal-circle.expanding {
+  transition: transform 0.75s cubic-bezier(0.7, 0, 0.3, 1), border-radius 0.6s ease;
+  border-radius: 25%;
+  box-shadow: none;
+}
+
+/* Ikon SVG di dalam Portal */
+.portal-icon-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.35s ease, transform 0.4s ease;
+}
+
+.portal-svg-leaf {
+  width: 44px;
+  height: 44px;
+  animation: pulse-leaf 1.2s ease-in-out infinite alternate;
+}
+
+.portal-text {
+  position: absolute;
+  bottom: -32px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: all 0.3s ease;
+}
+
+.portal-circle.floating-to-center .portal-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.portal-circle.expanding .portal-icon-wrapper {
+  opacity: 0;
+  transform: scale(1.5);
+}
+
+@keyframes pulse-leaf {
+  0% {
+    transform: scale(0.95) rotate(-3deg);
+  }
+  100% {
+    transform: scale(1.08) rotate(3deg);
+  }
+}

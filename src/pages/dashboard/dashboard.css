@@ -33,17 +33,20 @@ body.dashboard-body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(2px);
-  z-index: 90;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 100;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.25s ease;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .sidebar-overlay.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 /* --------------------------------------------------------------------------
@@ -52,16 +55,17 @@ body.dashboard-body {
 .dashboard-sidebar {
   position: fixed;
   top: 0;
-  left: -280px;
-  width: 270px;
+  left: -290px;
+  width: 280px;
   height: 100vh;
-  background-color: #ffffff;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
   border-right: 1px solid var(--color-border, #e2e8f0);
   display: flex;
   flex-direction: column;
-  z-index: 100;
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0,0,0,0.1));
+  z-index: 200;
+  transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
 }
 
 .dashboard-sidebar.active {
@@ -311,6 +315,6 @@ body.dashboard-body {
     display: none;
   }
   .dashboard-main {
-    margin-left: 270px;
+    margin-left: 280px;
   }
 }

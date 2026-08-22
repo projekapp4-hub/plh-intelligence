@@ -25,11 +25,8 @@
 </head>
 <body class="dashboard-body">
 
-  <!-- Overlay untuk Sidebar pada Tampilan Mobile -->
-  <div id="sidebarOverlay" class="sidebar-overlay"></div>
-
   <div class="dashboard-layout">
-    
+
     <!-- ==========================================================================
        SIDEBAR NAVIGATION (NAVBAR SPA CONTROLLER)
        ========================================================================== -->
@@ -144,6 +141,9 @@
 
     </div>
   </div>
+
+  <!-- Overlay untuk Sidebar pada Tampilan Mobile (Diletakkan di luar dashboard-layout agar stacking context bersih) -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
   <!-- Impor JavaScript Router Canvas via Path Relatif -->
   <script type="module" src="./src/pages/dashboard/dashboard.js"></script>
