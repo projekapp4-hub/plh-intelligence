@@ -32,6 +32,8 @@ const Icons = {
   lineChart: (size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>`,
   messageSquare: (size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
   search: (size = 14) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  chevronLeft: (size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  chevronRight: (size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
   user: (size = 13) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
   image: (size = 13) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
   close: (size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
@@ -113,6 +115,8 @@ const MASTER_CHECKLIST_DATA = [
 let analyticsData = [];
 let selectedScopeCategory = 'ALL';
 let activeDateFilter = 'BULAN_INI';
+let currentCalYear = 2026;
+let currentCalMonth = 7; // 0-indexed, 7 = Agustus
 
 // ============================================================================
 // 4. HELPER UTILITAS INTERNAL & DATA LAYER
@@ -679,7 +683,28 @@ export async function render(container) {
               <span class="scale-box bg-gray">Libur</span>
             </div>
           </div>
-          <div class="chart-card-body">
+          <div class="calendar-nav-toolbar">
+            <div class="calendar-month-selector">
+              <button type="button" id="btnCalPrevMonth" class="cal-nav-btn" aria-label="Bulan Sebelumnya">
+                ${Icons.chevronLeft(16)}
+              </button>
+              <span id="calMonthYearDisplay" class="cal-month-label">Agustus 2026</span>
+              <button type="button" id="btnCalNextMonth" class="cal-nav-btn" aria-label="Bulan Berikutnya">
+                ${Icons.chevronRight(16)}
+              </button>
+            </div>
+            <button type="button" id="btnCalToday" class="cal-today-btn">Bulan Ini</button>
+          </div>
+          <div class="chart-card-body calendar-heatmap-wrapper">
+            <div class="calendar-dow-header">
+              <span class="dow-cell dow-weekend">Min</span>
+              <span class="dow-cell">Sen</span>
+              <span class="dow-cell">Sel</span>
+              <span class="dow-cell">Rab</span>
+              <span class="dow-cell">Kam</span>
+              <span class="dow-cell">Jum</span>
+              <span class="dow-cell">Sab</span>
+            </div>
             <div id="calendarHeatmapContainer" class="calendar-heatmap-grid"></div>
           </div>
         </div>
@@ -773,6 +798,9 @@ export async function render(container) {
         flex-direction: column;
         gap: 1.5rem;
         width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
         padding-bottom: 3rem;
         font-family: var(--font-primary, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
         color: var(--color-text-main, #142418);
@@ -825,6 +853,13 @@ export async function render(container) {
         display: grid;
         grid-template-columns: 1fr;
         gap: 1rem;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
+      .toolbar-controls-grid > * {
+        min-width: 0;
       }
 
       @media (min-width: 768px) {
@@ -920,6 +955,9 @@ export async function render(container) {
         display: grid;
         grid-template-columns: repeat(1, 1fr);
         gap: 1.25rem;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
       }
 
       @media (min-width: 640px) { .kpi-grid-container { grid-template-columns: repeat(2, 1fr); } }
@@ -934,6 +972,8 @@ export async function render(container) {
         flex-direction: column;
         justify-content: space-between;
         box-shadow: var(--shadow-sm, 0 2px 4px rgba(44, 94, 59, 0.04));
+        min-width: 0;
+        box-sizing: border-box;
       }
 
       .kpi-header {
@@ -1085,6 +1125,9 @@ export async function render(container) {
         display: grid;
         grid-template-columns: 1fr;
         gap: 1.25rem;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
       }
 
       @media (min-width: 1024px) {
@@ -1098,6 +1141,10 @@ export async function render(container) {
         border-radius: var(--radius-lg, 16px);
         padding: 1.25rem;
         box-shadow: var(--shadow-sm, 0 2px 4px rgba(44, 94, 59, 0.04));
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
       }
 
       .chart-card-header {
@@ -1228,17 +1275,114 @@ export async function render(container) {
         padding: 0.5rem 0;
       }
 
-      /* Calendar Heatmap Grid */
+      /* Calendar Heatmap Toolbar & Grid */
+      .calendar-nav-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.85rem;
+        padding-bottom: 0.65rem;
+        border-bottom: 1px dashed var(--color-border, #cbe0d2);
+      }
+
+      .calendar-month-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .cal-nav-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm, 6px);
+        border: 1px solid var(--color-border, #cbe0d2);
+        background-color: var(--color-bg-base, #f5f9f6);
+        color: var(--color-text-main, #142418);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition-fast, all 0.15s ease-in-out);
+        padding: 0;
+      }
+
+      .cal-nav-btn:hover {
+        background-color: var(--color-primary, #2C5E3B);
+        color: #ffffff;
+        border-color: var(--color-primary, #2C5E3B);
+      }
+
+      .cal-month-label {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--color-primary, #2C5E3B);
+        min-width: 125px;
+        text-align: center;
+      }
+
+      .cal-today-btn {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: var(--radius-sm, 6px);
+        border: 1px solid var(--color-border, #cbe0d2);
+        background-color: var(--color-bg-base, #f5f9f6);
+        color: var(--color-primary, #2C5E3B);
+        cursor: pointer;
+        transition: var(--transition-fast, all 0.15s ease-in-out);
+      }
+
+      .cal-today-btn:hover {
+        background-color: var(--color-primary, #2C5E3B);
+        color: #ffffff;
+      }
+
+      .calendar-heatmap-wrapper {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+        box-sizing: border-box;
+      }
+
+      .calendar-dow-header {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(38px, 1fr));
+        gap: 0.4rem;
+        min-width: 300px;
+        width: 100%;
+        margin-bottom: 0.4rem;
+        box-sizing: border-box;
+      }
+
+      .dow-cell {
+        text-align: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--color-text-muted, #43594A);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 0.25rem 0;
+      }
+
+      .dow-weekend {
+        color: #dc2626;
+      }
+
       .calendar-heatmap-grid {
         display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 0.5rem;
+        grid-template-columns: repeat(7, minmax(38px, 1fr));
+        gap: 0.4rem;
+        min-width: 300px;
+        width: 100%;
+        box-sizing: border-box;
       }
 
       .heatmap-day-card {
         aspect-ratio: 1;
-        border-radius: var(--radius-md, 10px);
-        padding: 0.5rem;
+        border-radius: var(--radius-md, 8px);
+        padding: 0.35rem 0.4rem;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -1246,23 +1390,34 @@ export async function render(container) {
         transition: var(--transition-fast, all 0.15s ease-in-out);
         border: 1px solid transparent;
         box-sizing: border-box;
+        min-height: 44px;
       }
 
       .heatmap-day-card:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-md, 0 6px 12px rgba(44, 94, 59, 0.1));
+        box-shadow: var(--shadow-md, 0 4px 10px rgba(44, 94, 59, 0.12));
         z-index: 2;
       }
 
+      .heatmap-day-empty {
+        aspect-ratio: 1;
+        background: transparent;
+        border: none;
+        pointer-events: none;
+        min-height: 44px;
+      }
+
       .heatmap-date-num {
-        font-size: 0.78rem;
+        font-size: 0.72rem;
         font-weight: 700;
+        line-height: 1;
       }
 
       .heatmap-score-val {
-        font-size: 0.72rem;
+        font-size: 0.65rem;
         font-weight: 700;
         text-align: right;
+        line-height: 1;
       }
 
       .bg-dark-green {
@@ -1314,6 +1469,9 @@ export async function render(container) {
         display: grid;
         grid-template-columns: 1fr;
         gap: 1.25rem;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
       }
 
       .issue-card {
@@ -1322,6 +1480,10 @@ export async function render(container) {
         border-radius: var(--radius-lg, 16px);
         padding: 1.25rem;
         box-shadow: var(--shadow-sm, 0 2px 4px rgba(44, 94, 59, 0.04));
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
       }
 
       .issue-card-header {
@@ -1352,7 +1514,12 @@ export async function render(container) {
       }
 
       .style-table-overflow {
+        width: 100%;
+        max-width: 100%;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        display: block;
+        box-sizing: border-box;
       }
 
       .ranking-table {
@@ -1697,6 +1864,40 @@ function initAnalyticsPageLogic(container) {
     renderFindingsFeed(container, filteredReports, feedSearchInput ? feedSearchInput.value : '');
   }
 
+  const btnCalPrevMonth = container.querySelector('#btnCalPrevMonth');
+  const btnCalNextMonth = container.querySelector('#btnCalNextMonth');
+  const btnCalToday = container.querySelector('#btnCalToday');
+
+  if (btnCalPrevMonth) {
+    btnCalPrevMonth.addEventListener('click', () => {
+      currentCalMonth--;
+      if (currentCalMonth < 0) {
+        currentCalMonth = 11;
+        currentCalYear--;
+      }
+      renderCalendarHeatmap(container, analyticsData);
+    });
+  }
+
+  if (btnCalNextMonth) {
+    btnCalNextMonth.addEventListener('click', () => {
+      currentCalMonth++;
+      if (currentCalMonth > 11) {
+        currentCalMonth = 0;
+        currentCalYear++;
+      }
+      renderCalendarHeatmap(container, analyticsData);
+    });
+  }
+
+  if (btnCalToday) {
+    btnCalToday.addEventListener('click', () => {
+      currentCalYear = 2026;
+      currentCalMonth = 7; // Agustus 2026
+      renderCalendarHeatmap(container, analyticsData);
+    });
+  }
+
   if (datePresetSelect) {
     datePresetSelect.addEventListener('change', (e) => {
       activeDateFilter = e.target.value;
@@ -1967,23 +2168,48 @@ function renderRadarChart(container, reports) {
   `;
 }
 
-// VISUALISASI 4: CALENDAR HEATMAP
+// VISUALISASI 4: CALENDAR HEATMAP (DYNAMIC MONTH & YEAR DENSE GRID)
 function renderCalendarHeatmap(container, reports) {
   const heatmapContainer = container.querySelector('#calendarHeatmapContainer');
+  const monthYearDisplay = container.querySelector('#calMonthYearDisplay');
   if (!heatmapContainer) return;
 
+  const monthNames = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+
+  if (monthYearDisplay) {
+    monthYearDisplay.textContent = `${monthNames[currentCalMonth]} ${currentCalYear}`;
+  }
+
+  // Petakan laporan berdasarkan tanggal YYYY-MM-DD
   const reportMap = {};
-  reports.forEach(r => {
+  (analyticsData || []).forEach(r => {
     if (r.tanggal) {
-      const parts = r.tanggal.split('-');
-      const day = parseInt(parts[2], 10);
-      reportMap[day] = r;
+      reportMap[r.tanggal] = r;
     }
   });
 
+  const firstDayIndex = new Date(currentCalYear, currentCalMonth, 1).getDay(); // 0 = Minggu, 1 = Senin, ...
+  const daysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+
   let html = '';
-  for (let day = 1; day <= 31; day++) {
-    const report = reportMap[day];
+
+  // 1. Render empty offset boxes for leading days
+  for (let i = 0; i < firstDayIndex; i++) {
+    html += `<div class="heatmap-day-empty" aria-hidden="true"></div>`;
+  }
+
+  // 2. Render actual calendar days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayFormatted = String(day).padStart(2, '0');
+    const monthFormatted = String(currentCalMonth + 1).padStart(2, '0');
+    const dateStr = `${currentCalYear}-${monthFormatted}-${dayFormatted}`;
+    const dateObj = new Date(currentCalYear, currentCalMonth, day);
+    const isSunday = dateObj.getDay() === 0;
+
+    const report = reportMap[dateStr];
 
     if (report) {
       let trueCount = 0;
@@ -1996,16 +2222,17 @@ function renderCalendarHeatmap(container, reports) {
       else if (scorePct >= 60) colorClass = 'bg-yellow';
 
       html += `
-        <div class="heatmap-day-card ${colorClass}" data-day="${day}" tabindex="0" role="button" aria-label="Tanggal ${day} Agustus: ${scorePct}% kepatuhan">
+        <div class="heatmap-day-card ${colorClass}" data-date="${dateStr}" tabindex="0" role="button" aria-label="Tanggal ${day} ${monthNames[currentCalMonth]}: ${scorePct}% kepatuhan">
           <span class="heatmap-date-num">${day}</span>
           <span class="heatmap-score-val">${scorePct}%</span>
         </div>
       `;
     } else {
+      const isOff = isSunday;
       html += `
-        <div class="heatmap-day-card bg-gray" aria-label="Tanggal ${day} Agustus: Hari Libur">
-          <span class="heatmap-date-num">${day}</span>
-          <span class="heatmap-score-val">Libur</span>
+        <div class="heatmap-day-card bg-gray" aria-label="Tanggal ${day} ${monthNames[currentCalMonth]}: ${isOff ? 'Hari Libur' : 'Tidak Ada Data'}">
+          <span class="heatmap-date-num" style="${isSunday ? 'color: #dc2626;' : ''}">${day}</span>
+          <span class="heatmap-score-val">${isOff ? 'Libur' : '-'}</span>
         </div>
       `;
     }
@@ -2013,10 +2240,10 @@ function renderCalendarHeatmap(container, reports) {
 
   heatmapContainer.innerHTML = html;
 
-  heatmapContainer.querySelectorAll('.heatmap-day-card').forEach(card => {
+  heatmapContainer.querySelectorAll('.heatmap-day-card[data-date]').forEach(card => {
     const clickHandler = () => {
-      const day = card.getAttribute('data-day');
-      const report = reportMap[day];
+      const dateKey = card.getAttribute('data-date');
+      const report = reportMap[dateKey];
       if (report) {
         openDaySummaryModal(container, report);
       }
