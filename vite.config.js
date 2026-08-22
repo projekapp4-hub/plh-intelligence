@@ -17,8 +17,8 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true, // Membuka akses dari IP lokal (Wi-Fi/jaringan)
-    // Mengarahkan browser agar langsung membuka /landing.html saat `npm run dev`
-    open: '/landing.html',
+    // Mengarahkan browser agar langsung membuka root saat `npm run dev`
+    open: true,
   },
 
   // Konfigurasi Bundling Produksi (Multi-Page Application)
@@ -27,8 +27,7 @@ export default defineConfig({
     emptyOutDir: true, // Membersihkan folder dist sebelum proses build baru
     rollupOptions: {
       input: {
-        // Entry point landing page diperbarui ke landing.html
-        landing: resolve(__dirname, 'landing.html'),
+        main: resolve(__dirname, 'index.html'),
         login: resolve(__dirname, 'login.html'),
         dashboard: resolve(__dirname, 'dashboard.html'),
       },

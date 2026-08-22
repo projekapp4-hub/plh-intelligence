@@ -142,7 +142,7 @@ export function requireAuth() {
   if (!isAuthenticated()) {
     const currentPath = window.location.pathname;
     // Mencegah siklus pengalihan tanpa henti (infinite redirect loop)
-    if (!currentPath.endsWith('login.html') && !currentPath.endsWith('landing.html')) {
+    if (!currentPath.endsWith('login.html') && !currentPath.endsWith('landing.html') && !currentPath.endsWith('index.html') && currentPath !== '/' && !currentPath.endsWith('/')) {
       window.location.href = 'login.html';
     }
   }
