@@ -1614,7 +1614,7 @@ async function initDssLogic(container) {
           <div class="dss-sandbox-header-info">
             <div class="dss-pill-badge" style="background: #e6f4ea; color: #1e7e34; margin-bottom: 0.35rem;">
               <span class="dss-badge-icon">${ICONS.sliders}</span>
-              <span>Decision Simulator (Latensi 0ms)</span>
+              <span>Decision Simulator</span>
             </div>
             <h2 class="dss-card-title" style="font-size: 1.25rem;">
               <span>Interactive Policy Sandbox Simulator</span>
