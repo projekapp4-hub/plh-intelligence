@@ -104,6 +104,7 @@
 .back-link {
   white-space: nowrap;
   flex-shrink: 0;
+  width: auto; /* Mencegah override width 100% dari .btn pada mobile */
   font-size: var(--text-xs, 0.8rem);
   font-weight: 600;
   padding: 0.45rem 0.85rem;
@@ -151,13 +152,14 @@
     gap: 0.35rem;
     font-size: 0.8rem; /* Font konsisten untuk mobile */
     padding: 0.35rem 0.65rem;
-    max-width: 55%; /* Mencegah logo menabrak tombol kanan */
-    flex-shrink: 0; /* Cegah logo menciut/terkompresi */
+    max-width: 60%; /* Mencegah logo menabrak tombol kanan */
+    flex-shrink: 1;
+    min-width: 0;
     overflow: hidden;
   }
 
   .login-header .brand-img {
-    height: 18px; /* Ukuran proporsional ikon logo di HP */
+    height: 20px; /* Ukuran proporsional ikon logo di HP */
     width: auto;
     flex-shrink: 0;
   }
@@ -166,6 +168,8 @@
   .back-link {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    width: auto !important;
     padding: 0.35rem 0.65rem;
     font-size: 0.75rem;
     flex-shrink: 0;
@@ -177,6 +181,18 @@
 
   .back-text-short {
     display: inline;
+  }
+
+  /* Callout Demo agar rapi di layar sangat sempit */
+  .dev-demo-callout {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .dev-demo-callout .callout-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
 }
 /* --------------------------------------------------------------------------

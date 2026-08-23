@@ -12,26 +12,26 @@
    2. VARIABEL CSS SYSTEM (DESIGN TOKENS)
    -------------------------------------------------------------------------- */
 :root {
-  /* --- PALET WARNA LINGKUNGAN HIDUP (Sesuai Gambar) --- */
-  --color-primary: #2C5E3B;        /* Hutan Dalam - RGB(44, 94, 59) */
-  --color-primary-hover: #224a2e;  /* Versi lebih gelap untuk efek hover */
+  /* --- PALET VIBRANT BOTANICAL (Segar, Hidup, Senada dengan Ilustrasi) --- */
+  --color-primary: #15803D;        /* Emerald / Green 700 - Segar & Berwibawa */
+  --color-primary-hover: #166534;  /* Green 800 untuk Hover */
 
-  --color-secondary: #619170;      /* Sage Green - RGB(97, 145, 112) */
-  --color-secondary-hover: #4e775a;
+  --color-secondary: #16A34A;      /* Green 600 - Hidup & Jelas */
+  --color-secondary-hover: #15803D;
 
-  --color-surface-muted: #ABC4B2;  /* Soft Sage Gray - RGB(171, 196, 178) */
+  --color-surface-muted: #DCFCE7;  /* Green 100 - Lembut & Segar */
 
-  --color-bg-light: #B5F7C9;       /* Mint Dew Light - RGB(181, 247, 201) */
+  --color-bg-light: #F0FDF4;       /* Green 50 - Surface Segar Bersih */
 
-  --color-accent: #87FFAB;         /* Vibrant Spring Green - RGB(135, 255, 171) */
-  --color-accent-hover: #62f28d;
+  --color-accent: #22C55E;         /* Green 500 - Aksen Cerah Terpadu */
+  --color-accent-hover: #16A34A;
 
-  /* --- WARNA NETRAL & TEKS (Aksesibilitas Kontras Tinggi & Slate Ramah Mata) --- */
-  --color-bg-base: #F8FAFC;        /* Off-white ultra-clean (Slate 50) dengan tint hijau sangat halus */
-  --color-surface: #FFFFFF;        /* Latar belakang kartu/kontainer */
-  --color-text-main: #0F172A;      /* Slate 900 - Keterbacaan tajam & modern */
-  --color-text-muted: #475569;     /* Slate 600 - Teks sekunder/keterangan yang bersih & nyaman di mata */
-  --color-border: #E2E8F0;         /* Slate 200 - Garis pembatas elegan & soft */
+  /* --- WARNA NETRAL & TEKS (Modern Clean Slate - Kontras Tinggi) --- */
+  --color-bg-base: #F8FAFC;        /* Slate 50 - Bersih Modern */
+  --color-surface: #FFFFFF;        /* Pure White */
+  --color-text-main: #0F172A;      /* Slate 900 - Sangat Tajam & Modern */
+  --color-text-muted: #475569;     /* Slate 600 - Elegan & Jelas */
+  --color-border: #E2E8F0;         /* Slate 200 - Garis Halus */
   --color-border-subtle: #F1F5F9;  /* Slate 100 */
 
   /* --- TIPOGRAFI RESPONSIF & HIERARKI --- */
@@ -69,7 +69,7 @@
   --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
   --shadow-lg: 0 12px 28px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
   --shadow-tactile: 0 4px 0 var(--color-primary-hover);
-  --shadow-tactile-accent: 0 4px 0 #52d675;
+  --shadow-tactile-accent: 0 4px 0 #15803D;
 
   /* --- TRANSISI & MOTION --- */
   --transition-fast: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);

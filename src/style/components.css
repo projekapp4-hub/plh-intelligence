@@ -45,33 +45,37 @@
 .btn-primary:hover {
   background-color: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
+  color: #FFFFFF;
   transform: translateY(-2px);
   box-shadow: 0 5px 0 var(--color-primary-hover);
 }
 
 .btn-primary:active {
   transform: translateY(2px);
+  color: #FFFFFF;
   box-shadow: 0 1px 0 var(--color-primary-hover);
 }
 
-/* Variasi Tombol Accent / CTA Cerah (Pucuk Hijau - Duolingo Hero Button) */
+/* Variasi Tombol Accent / CTA Cerah (Green 500) */
 .btn-accent {
   background-color: var(--color-accent);
-  color: #064e1e;
-  border-color: #6ee793;
-  box-shadow: 0 4px 0 #4ed877;
+  color: #FFFFFF;
+  border-color: var(--color-accent);
+  box-shadow: 0 4px 0 var(--color-primary);
 }
 
 .btn-accent:hover {
   background-color: var(--color-accent-hover);
-  border-color: #55e47c;
-  box-shadow: 0 6px 0 #3ec968;
+  border-color: var(--color-accent-hover);
+  color: #FFFFFF;
+  box-shadow: 0 6px 0 var(--color-primary-hover);
   transform: translateY(-2px);
 }
 
 .btn-accent:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 #3ec968;
+  color: #FFFFFF;
+  box-shadow: 0 1px 0 var(--color-primary-hover);
 }
 
 /* Variasi Tombol Secondary (Sage Green) */
@@ -85,12 +89,14 @@
 .btn-secondary:hover {
   background-color: var(--color-secondary-hover);
   border-color: var(--color-secondary-hover);
+  color: #FFFFFF;
   transform: translateY(-2px);
   box-shadow: 0 5px 0 var(--color-secondary-hover);
 }
 
 .btn-secondary:active {
   transform: translateY(2px);
+  color: #FFFFFF;
   box-shadow: 0 1px 0 var(--color-secondary-hover);
 }
 
@@ -103,7 +109,7 @@
 }
 
 .btn-outline:hover {
-  background-color: #f8fafc;
+  background-color: var(--color-bg-light);
   border-color: var(--color-primary);
   color: var(--color-primary);
   transform: translateY(-2px);
@@ -112,6 +118,7 @@
 
 .btn-outline:active {
   transform: translateY(2px);
+  color: var(--color-primary);
   box-shadow: 0 1px 0 #94a3b8;
 }
 
@@ -234,9 +241,9 @@
 }
 
 .badge-accent {
-  background-color: #e8f7ee;
+  background-color: var(--color-bg-light);
   color: var(--color-primary);
-  border: 1px solid #c2e9d0;
+  border: 1px solid var(--color-surface-muted);
 }
 
 .badge-vibrant {

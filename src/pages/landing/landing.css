@@ -121,7 +121,7 @@
    2. HERO SECTION (DUOLINGO SPACIOUS HERO)
    -------------------------------------------------------------------------- */
 .hero-section {
-  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, var(--color-bg-base) 100%);
   padding-top: 4rem;
   padding-bottom: 4.5rem;
   overflow: hidden;
