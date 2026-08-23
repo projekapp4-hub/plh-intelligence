@@ -10,10 +10,12 @@
 
 import { compressImage, fileToBase64 } from '../../../utils/imageCompressor.js';
 import { saveItem } from '../../../utils/storage.js';
+import { generatePDFReport } from '../../../utils/createPDF.js';
 
 // SVG Icon Pack (Lucide style, zero emojis)
 const ICONS = {
   clipboard: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="m9 14 2 2 4-4"></path></svg>`,
+  printer: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>`,
   user: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
   calendar: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>`,
   sparkles: `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg>`,
@@ -125,6 +127,10 @@ export function render(container) {
             <h1 class="form-title">Form Laporan Kebersihan & Preservasi Lingkungan</h1>
             <p class="form-subtitle">Instrumen digital evaluasi harian kepatuhan pemeliharaan lingkungan sekolah berbasis data.</p>
           </div>
+          <button type="button" id="btnPrintDutySheet" class="btn-print-sheet" title="Cetak lembar kendali fisik untuk piket lapangan harian">
+            <span class="btn-icon-svg">${ICONS.printer}</span>
+            <span>Cetak Lembar Piket</span>
+          </button>
         </div>
 
         <!-- FLOATING LIVE COMPLIANCE HUD BAR -->
@@ -448,6 +454,36 @@ export function render(container) {
         font-size: 0.84rem;
         color: #64748b;
         line-height: 1.45;
+      }
+
+      .btn-print-sheet {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.95rem;
+        background: #f0fdf4;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .btn-print-sheet:hover {
+        background: #dcfce7;
+        border-color: #86efac;
+        box-shadow: 0 2px 4px rgba(6, 95, 70, 0.08);
+      }
+
+      /* Form Container */
+      .report-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
       }
 
       /* Floating Glassmorphism Compliance HUD */
@@ -1431,6 +1467,7 @@ function renderCategoriesMarkup() {
  */
 function initFormLogic(container) {
   const form = container.querySelector('#plhReportForm');
+  const btnPrintDutySheet = container.querySelector('#btnPrintDutySheet');
   const btnMarkAllTrue = container.querySelector('#btnMarkAllTrue');
   const btnMarkAllFalse = container.querySelector('#btnMarkAllFalse');
   const btnResetForm = container.querySelector('#btnResetForm');
@@ -1902,6 +1939,61 @@ function initFormLogic(container) {
         btnSubmitForm.innerHTML = `<span class="btn-icon">${ICONS.save}</span><span>Simpan Laporan Data</span>`;
       }
     }
+  }
+
+  // Cetak Lembar Tugas Piket Fisik (PDF)
+  if (btnPrintDutySheet) {
+    btnPrintDutySheet.addEventListener('click', async () => {
+      try {
+        const guruPiketVal = form.querySelector('#guruPiket').value.trim() || '-';
+        const tanggalVal = form.querySelector('#tanggalPiket').value.trim() || new Date().toISOString().split('T')[0];
+        const p1 = form.querySelector('#petugas1').value.trim() || '-';
+        const p2 = form.querySelector('#petugas2').value.trim() || '-';
+        const p3 = form.querySelector('#petugas3').value.trim() || '-';
+        const petugasList = [p1, p2, p3].filter(p => p !== '-').join(', ') || '-';
+
+        const pdfHeaders = [
+          { header: 'No', dataKey: 'no', width: 10 },
+          { header: 'Kategori / Bidang', dataKey: 'kategori', width: 38 },
+          { header: 'Indikator & Rincian Tugas Lingkungan', dataKey: 'tugas', width: 92 },
+          { header: 'Status Fisik', dataKey: 'status', width: 22 },
+          { header: 'Paraf', dataKey: 'paraf', width: 18 }
+        ];
+
+        const pdfData = [];
+        let counter = 1;
+
+        CHECKLIST_CATEGORIES.forEach(cat => {
+          cat.items.forEach(task => {
+            const selected = form.querySelector(`input[name="${task.id}"]:checked`);
+            let statusText = '[ ] Ya   [ ] Tdk';
+            if (selected) {
+              statusText = selected.value === 'TRUE' ? '[V] Ya' : '[X] Tidak';
+            }
+
+            pdfData.push({
+              no: String(counter++),
+              kategori: `${cat.code} - ${cat.title}`,
+              tugas: `[${task.code}] ${task.label}`,
+              status: statusText,
+              paraf: '.......'
+            });
+          });
+        });
+
+        await generatePDFReport({
+          title: 'LEMBAR KONTROL TUGAS PIKET HARIAN ADIWIYATA',
+          subtitle: `Tgl: ${tanggalVal} | Guru Piket: ${guruPiketVal} | Petugas: ${petugasList}`,
+          headers: pdfHeaders,
+          data: pdfData,
+          fileName: `Lembar_Piket_PLH_${tanggalVal}.pdf`,
+          orientation: 'portrait'
+        });
+      } catch (err) {
+        console.error('Gagal mencetak lembar piket:', err);
+        alert('Terjadi kendala saat membuat lembar piket PDF: ' + err.message);
+      }
+    });
   }
 
   // Inisialisasi awal saat form dimuat
