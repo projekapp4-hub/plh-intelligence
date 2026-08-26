@@ -33,3 +33,4 @@ rancangan.md
 skill.txt
 # Local Netlify folder
 .netlify
+deno.lock

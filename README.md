@@ -1,6 +1,6 @@
 # PLH Intelligence
 
-Sebuah aplikasi web modern berbasis Vite yang dirancang untuk performa tinggi, efisiensi pengembangan, dan antarmuka yang responsif.
+Sebuah aplikasi web modern berbasis Vite dan Serverless Architecture yang dirancang untuk performa tinggi, efisiensi pengembangan, keamanan kunci API, dan antarmuka yang responsif.
 
 ---
 
@@ -8,82 +8,91 @@ Sebuah aplikasi web modern berbasis Vite yang dirancang untuk performa tinggi, e
 
 Sebelum memulai penyiapan proyek di lingkungan lokal, pastikan perangkat komputer Anda telah terpasang perangkat lunak berikut:
 
-* **Node.js**: `v24.13.0` (atau versi LTS/terbaru yang kompatibel)
+* **Node.js**: `v20.x` / `v22.x` / `v24.x` (atau versi LTS terbaru)
 * **npm**: Terpasang otomatis bersamaan dengan Node.js
 * **Git**: Untuk keperluan verifikasi dan kontrol versi
 
-Untuk memeriksa versi Node.js dan npm yang terinstal di komputer Anda, jalankan perintah berikut di terminal:
+Untuk memeriksa versi Node.js dan npm yang terinstal di komputer Anda:
 
 ```bash
 node -v
 npm -v
 ```
+
 ---
 
 ## 🚀 Langkah-Langkah Instalasi & Penggunaan
-
-Ikuti urutan langkah berikut untuk mengkloning, memasang dependensi, dan menjalankan proyek di mesin lokal Anda:
 
 ### 1. Kloning Repositori
 
 Unduh salinan kode sumber dari repositori GitHub ke komputer lokal Anda:
 
 ```bash
-git clone [https://github.com/projekapp4-hub/plh-intelligence.git](https://github.com/projekapp4-hub/plh-intelligence.git)
-
-```
-
-Setelah proses pengunduhan selesai, masuk ke dalam direktori proyek:
-
-```bash
+git clone https://github.com/projekapp4-hub/plh-intelligence.git
 cd plh-intelligence
-
 ```
 
 ---
 
 ### 2. Instalasi Dependensi
 
-Pasang seluruh paket dan modul dependensi yang tercantum di dalam berkas `package.json`:
+Pasang seluruh paket dan modul dependensi:
 
 ```bash
 npm install
-
 ```
 
 ---
 
 ### 3. Konfigurasi Lingkungan (Environment Variables)
 
-Proyek ini memerlukan konfigurasi variabel lingkungan khusus untuk mendukung fungsionalitas.
+Aplikasi ini menggunakan arsitektur Serverless Function untuk mengamankan Google Gemini API Key agar tidak terekspos ke sisi klien (*browser*).
 
-Buatlah berkas bernama `.env` secara manual pada direktori utama (*root directory*) proyek Anda, lalu isi dengan kunci dan nilai konfigurasi yang diperlukan.
+Buatlah berkas `.env` pada direktori utama (*root directory*) proyek:
 
-> **Catatan Penting:**
-> * Selalu gunakan awalan `VITE_` pada nama variabel lingkungan agar dapat diakses di dalam kode frontend Vite (contoh: `VITE_API_BASE_URL=https://api.example.com`).
-> * Pastikan berkas `.env` **tidak pernah diunggah** ke GitHub demi menjaga kerahasiaan kunci API atau data sensitif lainnya.
-> * Variabel yang dibuat adalah `VITE_GEMINI_API_KEY=`
-> 
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+> **Catatan Keamanan:**
+> * Gunakan variabel `GEMINI_API_KEY` (tanpa prefix `VITE_`) agar kunci diproses murni di sisi *backend/serverless*.
+> * Berkas `.env` telah didaftarkan pada `.gitignore` dan **jangan pernah diunggah ke GitHub**.
 
 ---
 
-### 4. Menjalankan Server Pengembangan (Development Server)
+### 4. Menjalankan Server Pengembangan Lokal
 
-Setelah seluruh dependensi terpasang dan konfigurasi `.env` siap, jalankan server lokal Vite dengan fitur *Hot Module Replacement* (HMR):
+Untuk menjalankan frontend (Vite) beserta Serverless Functions (Netlify) secara bersamaan di lingkungan lokal:
 
 ```bash
-npm run dev
-
+npm run dev:netlify
 ```
 
-Secara *default*, server akan berjalan pada alamat lokal berikut:
+Buka peramban (*browser*) Anda pada tautan berikut:
 
 ```text
-http://localhost:3000
-
+http://localhost:8888
 ```
 
-Buka tautan di atas melalui peramban (*browser*) Anda untuk melihat aplikasi secara langsung.
+*(Catatan: Anda juga dapat menjalankan `npm run dev` untuk server Vite murni di port `3000` dengan reverse-proxy aktif).*
+
+---
+
+### 5. Proses Build & Deployment Produksi
+
+#### Kompilasi Frontend
+```bash
+npm run build
+```
+
+#### Deployment ke Netlify (Direkomendasikan via Git)
+1. Sambungkan repositori GitHub ini ke dashboard **Netlify**.
+2. Netlify akan otomatis membaca konfigurasi `netlify.toml` (Build command: `npm run build`, Publish directory: `dist`, Functions: `netlify/functions`).
+3. Tambahkan environment variable pada dashboard Netlify:
+   * **Site configuration** > **Environment variables** > **Add a variable**
+   * Key: `GEMINI_API_KEY`
+   * Value: `[KUNCI_API_GEMINI_ANDA]`
+4. Aplikasi siap digunakan dengan endpoint API yang aman.
 
 ---
 
@@ -91,14 +100,18 @@ Buka tautan di atas melalui peramban (*browser*) Anda untuk melihat aplikasi sec
 
 ```text
 plh-intelligence/
-├── node_modules/       # Modul dependensi proyek (diabaikan oleh Git)
-├── public/             # Aset statis terbuka (favicon, gambar umum, dll.)
-├── src/                # Kode sumber utama aplikasi (komponen, halaman, gaya)
-├── .env                # File variabel lingkungan lokal (dibuat manual)
+├── netlify/
+│   └── functions/      # Serverless Functions (Backend proxy API Gemini)
+├── public/             # Aset statis terbuka
+├── src/                # Kode sumber utama aplikasi frontend
+│   ├── api/            # Client layer pemanggilan serverless API
+│   ├── assets/         # Gambar dan media
+│   ├── pages/          # Modul halaman (landing, login, dashboard)
+│   ├── style/          # Stylesheet & tema
+│   └── utils/          # Helper & storage manager
+├── .env                # Variabel lingkungan lokal (dibuat manual)
 ├── .gitignore          # Daftar berkas/folder yang diabaikan Git
-├── index.html          # File entri utama HTML untuk Vite
-├── package.json        # Manifest proyek dan daftar dependensi npm
-├── package-lock.json   # Rekaman versi pasti dari dependensi terinstal
-└── vite.config.js      # Konfigurasi utama bundler Vite
-
+├── netlify.toml        # Konfigurasi routing & dev server Netlify
+├── package.json        # Manifest proyek & dependencies
+└── vite.config.js      # Konfigurasi bundler Vite
 ```
