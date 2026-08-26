@@ -17,8 +17,13 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true, // Membuka akses dari IP lokal (Wi-Fi/jaringan)
-    // Mengarahkan browser agar langsung membuka root saat `npm run dev`
-    open: true,
+    open: false,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8888',
+        changeOrigin: true,
+      },
+    },
   },
 
   // Konfigurasi Bundling Produksi (Multi-Page Application)
