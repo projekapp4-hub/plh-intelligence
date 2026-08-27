@@ -86,10 +86,57 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadViewModule(viewName) {
     if (!spaCanvas) return;
 
-    // Indikator pemuatan
+    // Indikator pemuatan skeleton shimmer modern
     spaCanvas.innerHTML = `
-      <div class="canvas-loading">
-        <span>⏳ Memuat modul <strong>views/${viewName}.js</strong>...</span>
+      <div class="canvas-skeleton" aria-busy="true" aria-label="Memuat konten...">
+        <!-- Skeleton Header Bar -->
+        <div class="skeleton-header-row">
+          <div style="display: flex; flex-direction: column; gap: 8px; width: 45%;">
+            <div class="skeleton-box" style="height: 24px; width: 60%;"></div>
+            <div class="skeleton-box" style="height: 14px; width: 90%;"></div>
+          </div>
+          <div class="skeleton-box" style="height: 36px; width: 140px; border-radius: 8px;"></div>
+        </div>
+
+        <!-- Skeleton KPI Cards Grid -->
+        <div class="skeleton-kpi-grid">
+          <div class="skeleton-card">
+            <div class="skeleton-box" style="height: 14px; width: 50%; margin-bottom: 12px;"></div>
+            <div class="skeleton-box" style="height: 32px; width: 70%; margin-bottom: 8px;"></div>
+            <div class="skeleton-box" style="height: 12px; width: 85%;"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-box" style="height: 14px; width: 55%; margin-bottom: 12px;"></div>
+            <div class="skeleton-box" style="height: 32px; width: 65%; margin-bottom: 8px;"></div>
+            <div class="skeleton-box" style="height: 12px; width: 75%;"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-box" style="height: 14px; width: 60%; margin-bottom: 12px;"></div>
+            <div class="skeleton-box" style="height: 32px; width: 80%; margin-bottom: 8px;"></div>
+            <div class="skeleton-box" style="height: 12px; width: 70%;"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-box" style="height: 14px; width: 45%; margin-bottom: 12px;"></div>
+            <div class="skeleton-box" style="height: 32px; width: 60%; margin-bottom: 8px;"></div>
+            <div class="skeleton-box" style="height: 12px; width: 80%;"></div>
+          </div>
+        </div>
+
+        <!-- Skeleton Content Panels -->
+        <div class="skeleton-main-grid">
+          <div class="skeleton-card" style="min-height: 280px; display: flex; flex-direction: column; gap: 14px;">
+            <div class="skeleton-box" style="height: 20px; width: 40%;"></div>
+            <div class="skeleton-box" style="height: 16px; width: 75%;"></div>
+            <div class="skeleton-box" style="height: 180px; width: 100%; border-radius: 8px; margin-top: auto;"></div>
+          </div>
+          <div class="skeleton-card" style="min-height: 280px; display: flex; flex-direction: column; gap: 14px;">
+            <div class="skeleton-box" style="height: 20px; width: 60%;"></div>
+            <div class="skeleton-box" style="height: 14px; width: 90%;"></div>
+            <div class="skeleton-box" style="height: 48px; width: 100%; border-radius: 8px;"></div>
+            <div class="skeleton-box" style="height: 48px; width: 100%; border-radius: 8px;"></div>
+            <div class="skeleton-box" style="height: 48px; width: 100%; border-radius: 8px;"></div>
+          </div>
+        </div>
       </div>
     `;
 

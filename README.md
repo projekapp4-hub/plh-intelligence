@@ -1,15 +1,15 @@
 <div align="center">  
     
-  # [NAMA PROYEK]   
-  ### [Tagline Singkat dan Menarik]  
+  # PLH-Intelligence   
+  ### Data Tepat, Aksi Cepat, Lingkungan Terawat  
     
-  [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Visit_Site-success?style=for-the-badge)](https://[URL_DEMO])  
-  [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://[URL_REPO])  
+  [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Visit_Site-success?style=for-the-badge)](https://plh-intelligence.netlify.app/)  
+  [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/projekapp4-hub/plh-intelligence)  
   [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)  
     
   **Submission for ITECHNO CUP 2026 - Web Development**  
     
-  **By [Nama Tim]**  
+  **By SMAS SMART Ekselensia Indonesia**  
     
 </div>
 
@@ -35,11 +35,9 @@
 
 | Nama | Peran | GitHub |  
 |------|-------|--------|  
-| **[Nama Lengkap 1]** | Project Lead & Full Stack Developer | [GitHub](https://github.com/[username1]) |  
-| **[Nama Lengkap 2]** | Frontend Developer | [GitHub](https://github.com/[username2]) |  
-| **[Nama Lengkap 3]** | Backend Developer | [GitHub](https://github.com/[username3]) |  
-| **[Nama Lengkap 4]** | UI/UX Designer | [GitHub](https://github.com/[username4]) |  
-| **[Nama Lengkap 4]** | UI/UX Designer | [@username4](https://github.com/[username4]) |
+| **Al Musawiru** | Project Lead & Full Stack Developer | [GitHub](https://github.com/projekapp4-hub/) |  
+| **Gilang Al Farizi Khasafi** | UI/UX designer | Kosong|  
+| **Mujahid Kayyis** | Software Tester | Kosong|  
 
 ---
 
@@ -47,17 +45,17 @@
 
 ### Latar Belakang
 
-[Jelaskan konteks permasalahan yang ingin diselesaikan. Gunakan data atau fakta untuk memperkuat argumen. Contoh: "Berdasarkan survei X, 70% pengguna mengalami kesulitan dalam..."]
+Pencatatan piket dan kebersihan di lingkungan sekolah umumnya masih dilakukan secara manual menggunakan kertas. Metode konvensional ini rentan terhadap kehilangan lembar data, kerusakan fisik, serta menyulitkan proses rekapitulasi dan evaluasi berkala saat arsip catatan mulai menumpuk.
 
 ### Solusi yang Ditawarkan
 
-[Jelaskan bagaimana aplikasi ini menyelesaikan masalah tersebut dengan pendekatan yang unik atau inovatif]
+**PLH-Intelligence** mendigitalkan seluruh alur pencatatan dan rekapitulasi data piket secara real-time dan terorganisir. Aplikasi ini juga dilengkapi integrasi AI serta fitur *Decision Support System* (DSS) untuk menganalisis data kebersihan secara otomatis dan memberikan rekomendasi evaluasi yang tepat.
 
 ### Tujuan Proyek
 
-- 🎯 **Tujuan Utama**: [Tujuan primer aplikasi]  
-- 📊 **Target Pengguna**: [Siapa yang akan menggunakan aplikasi ini]  
-- 💡 **Value Proposition**: [Apa yang membuat aplikasi ini berbeda dari solusi lain]
+- 🎯 **Tujuan Utama**: Menyediakan platform digital praktis untuk pencatatan, rekapitulasi otomatis, dan analisis evaluasi piket kebersihan lingkungan.
+- 📊 **Target Pengguna**: Pihak sekolah (guru, koordinator piket, staf, siswa) serta instansi pendidikan atau organisasi yang mengelola kebersihan berkala.
+- 💡 **Value Proposition**: Rekapitulasi instan bebas kertas yang dipadukan dengan DSS dan analitik cerdas untuk mempermudah pengambilan keputusan.
 
 ---
 
@@ -67,17 +65,17 @@
 
 | Fitur | Deskripsi | Keunggulan |  
 |----------|--------------|---------------|  
-| **[Nama Fitur 1]** | [Deskripsi singkat fitur] | [Mengapa fitur ini penting/unik] |  
-| **[Nama Fitur 2]** | [Deskripsi singkat fitur] | [Mengapa fitur ini penting/unik] |  
-| **[Nama Fitur 3]** | [Deskripsi singkat fitur] | [Mengapa fitur ini penting/unik] |  
-| **[Nama Fitur 4]** | [Deskripsi singkat fitur] | [Mengapa fitur ini penting/unik] |
+| **Pencatatan Piket & Rekap Online** | Input formulir piket berbasis 13 indikator Adiwiyata (5 kategori) secara digital dan terpusat. | Bebas kertas (*paperless*), data otomatis tersimpan di Database secara terstruktur dan aman. |  
+| **Decision Support System (DSS) AI** | Analisis evaluasi kebersihan cerdas berbasis agregat 30 hari menggunakan Gemini AI. | Memberikan rekomendasi tindakan preventif, skor kepatuhan, dan identifikasi area kritis secara objektif. |  
+| **Ekspor PDF (Per Piket & Massal)** | Cetak laporan formal berformat PDF baik per entri piket tunggal maupun rekapitulasi data massal. | Layout rapi, siap cetak untuk arsip sekolah dengan sanitasi teks otomatis via `jspdf`. |  
+| **Ekspor Data Spreadsheet (Excel)** | Unduh seluruh rekapitulasi data laporan kebersihan ke dalam format `.xlsx`. | Memudahkan analisis lanjutan dan pengolahan data administratif menggunakan `exceljs`. |  
+| **Cetak Lembar Form Piket Kosong** | Fitur cetak format formulir blangko fisik siap pakai langsung dari aplikasi. | Fleksibel digunakan sebagai cadangan saat dibutuhkan pencatatan luring di lapangan. |  
 
 ### Fitur Tambahan
 
-- **[Fitur A]** - [Penjelasan singkat]  
-- **[Fitur B]** - [Penjelasan singkat]  
-- **[Fitur C]** - [Penjelasan singkat]  
-- **[Fitur D]** - [Penjelasan singkat]
+- **Visualisasi Data & Tren Interaktif** - Grafik kepatuhan harian dan distribusi kategori kebersihan secara visual menggunakan `Chart.js`.
+- **Kompresi Gambar Otomatis di Klien** - Optimasi ukuran foto dokumentasi piket sebelum disimpan menggunakan `browser-image-compression` agar efisien memori.
+- **Antarmuka Responsif & Modern** - Desain SPA (*Single Page Application*) Vanilla JS dengan sistem ikon SVG semantik yang ringan dan bersih.
 
 ---
 
@@ -85,7 +83,7 @@
 
 ### Live Demo
 
-🔗 **[Kunjungi Website](https://[URL_DEMO])**
+🔗 **[Kunjungi Website](https://plh-intelligence.netlify.app/)**
 
 ### Screenshot Aplikasi
 
@@ -102,7 +100,7 @@
 
 ### Video Demo
 
-📹 **[Link Video Demo](https://[URL_VIDEO])** _(opsional)_
+📹 **[Link Video Demo](https://drive.google.com/file/d/1mJ_dNP-68NWdAIWv_HYY3yvFTr5RNJIR/view?usp=sharing)** _(opsional)_
 
 ---
 
