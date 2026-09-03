@@ -395,7 +395,7 @@ Proyek ini dilisensikan di bawah [MIT License](LICENSE) - lihat file LICENSE unt
 
 <div align="center">
 
-  **Made with ❤️ by [Nama Tim] for ITECHNO CUP 2026**
+  **Made with ❤️ by SMAS SMART Ekselensia Indonesia for ITECHNO CUP 2026**
 
     
 </div>  
